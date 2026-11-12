@@ -1,0 +1,1821 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Laboratório de Redes: rode ipconfig, ping, tracert, nslookup e outros comandos no seu computador e veja o que cada resultado significa.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%230E1B2A%22%2F%3E%3Ccircle%20cx%3D%2218%22%20cy%3D%2244%22%20r%3D%227%22%20fill%3D%22%23E89A2C%22%2F%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2244%22%20r%3D%227%22%20fill%3D%22%235CC8BF%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2218%22%20r%3D%227%22%20fill%3D%22%23F3F5F2%22%2F%3E%3Cpath%20d%3D%22M18%2044L32%2018L46%2044Z%22%20fill%3D%22none%22%20stroke%3D%22%238FA3B5%22%20stroke-width%3D%223%22%2F%3E%3C%2Fsvg%3E">
+<title>Laboratório de Redes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Bancada de laboratório: terminal escuro + papel claro; trilha de missões numeradas à esquerda */
+:root {
+  --bg: #F3F5F2; --surface: #FCFDFB; --surface-2: #E9EEEA; --ink: #0E1B2A; --text: #3E4C59; --muted: #5F6D79; --line: #D5DDD8;
+  --accent: #A85A10; --accent-fill: #E89A2C; --on-accent: #1B1408; --teal: #0F7570; --blue: #2F5FA8; --rose: #A33E6A;
+  --good: #1E7A4C; --good-bg: #DDF0E5; --warn: #8A5A00; --warn-bg: #FBEBCB; --bad: #B3261E; --bad-bg: #F8DEDB; --info: #2F5FA8; --info-bg: #DFE8F6;
+  --term-bg: #0E1B2A; --term-line: #24405A; --term-text: #DDE6EE; --term-muted: #8FA3B5; --term-amber: #F0A940; --term-teal: #5CC8BF;
+  --display: 'IBM Plex Sans', Arial, sans-serif; --body: 'IBM Plex Sans', Arial, sans-serif; --mono: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0A1520; --surface: #112131; --surface-2: #182B3D; --ink: #EEF3F6; --text: #C3CFD9; --muted: #93A3B1; --line: #26394C;
+  --accent: #F0A940; --accent-fill: #E89A2C; --on-accent: #1B1408; --teal: #5CC8BF; --blue: #8DBBF5; --rose: #EBA0C0;
+  --good: #6FD6A0; --good-bg: #123526; --warn: #F2C35B; --warn-bg: #3A2D0F; --bad: #FF8F86; --bad-bg: #3D1A18; --info: #9CC3F7; --info-bg: #15283F;
+  --term-bg: #060E16; --term-line: #1E3449; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0A1520; --surface: #112131; --surface-2: #182B3D; --ink: #EEF3F6; --text: #C3CFD9; --muted: #93A3B1; --line: #26394C;
+  --accent: #F0A940; --accent-fill: #E89A2C; --on-accent: #1B1408; --teal: #5CC8BF; --blue: #8DBBF5; --rose: #EBA0C0;
+  --good: #6FD6A0; --good-bg: #123526; --warn: #F2C35B; --warn-bg: #3A2D0F; --bad: #FF8F86; --bad-bg: #3D1A18; --info: #9CC3F7; --info-bg: #15283F;
+  --term-bg: #060E16; --term-line: #1E3449; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--text); font: 16px/1.55 var(--body); }
+a { color: var(--blue); }
+h1, h2, h3 { font-family: var(--display); color: var(--ink); text-wrap: balance; margin: 0; }
+p { margin: 0; }
+code, .mono { font-family: var(--mono); }
+:focus-visible { outline: 3px solid var(--accent-fill); outline-offset: 2px; }
+
+.wrap { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* topo */
+.top { background: var(--term-bg); color: var(--term-text); }
+.top .wrap { padding-block: 40px 32px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.top .eyebrow { color: var(--term-amber); }
+.top h1 { color: #F3F5F2; font-size: clamp(32px, 5vw, 52px); line-height: 1.05; font-weight: 700; margin-top: 8px; }
+.top .lead { color: #B9C7D3; max-width: 62ch; margin-top: 12px; font-size: 17px; }
+.top .privacy { margin-top: 14px; font-size: 14px; color: var(--term-teal); display: flex; gap: 8px; align-items: center; }
+.panel-os { display: grid; gap: 10px; justify-items: end; }
+.panel-os .label { font-size: 13px; color: var(--term-muted); }
+.seg { display: inline-flex; background: #142638; border: 1px solid var(--term-line); border-radius: 999px; padding: 4px; gap: 2px; }
+.seg button { font: 600 14px var(--body); color: #B9C7D3; background: transparent; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent-fill); color: var(--on-accent); }
+.progress { display: grid; gap: 6px; width: 260px; }
+.progress .bar { height: 8px; background: #1C3247; border-radius: 99px; overflow: hidden; }
+.progress .bar span { display: block; height: 100%; background: var(--term-teal); width: 0; transition: width .4s; }
+.progress p { font-size: 13px; color: var(--term-muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* layout */
+.layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 32px; padding-block: 32px 64px; align-items: start; }
+.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.toc a { display: grid; grid-template-columns: 28px 1fr 18px; gap: 8px; align-items: center; padding: 7px 10px; border-radius: 10px; color: var(--text); text-decoration: none; font-size: 14px; }
+.toc a:hover { background: var(--surface-2); }
+.toc .n { font: 600 12px var(--mono); color: var(--accent); }
+.toc .ok { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); }
+.toc li.done .ok { background: var(--good); border-color: var(--good); }
+.toc-title { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 10px 8px; }
+.missions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; min-width: 0; }
+
+/* missão */
+.mission { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; min-width: 0; scroll-margin-top: 16px; }
+.mhead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+.mnum { font: 600 15px var(--mono); color: var(--on-accent); background: var(--accent-fill); border-radius: 10px; padding: 6px 10px; }
+.mhead h2 { font-size: 24px; font-weight: 600; line-height: 1.2; }
+.status { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.status.done { background: var(--good-bg); color: var(--good); }
+.why { max-width: 72ch; }
+.steps { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.step { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; }
+.step-label { font-weight: 600; color: var(--ink); font-size: 15px; }
+.hint { font-size: 14px; color: var(--muted); }
+
+.cmd { display: flex; align-items: center; gap: 10px; background: var(--term-bg); border: 1px solid var(--term-line); border-radius: 10px; padding: 10px 10px 10px 14px; min-width: 0; }
+.cmd code { flex: 1; min-width: 0; color: var(--term-text); font-size: 15px; overflow-x: auto; white-space: nowrap; }
+.cmd code::before { content: '› '; color: var(--term-amber); }
+.btn { font: 600 14px var(--body); border-radius: 10px; padding: 9px 16px; border: 1px solid transparent; cursor: pointer; background: var(--accent-fill); color: var(--on-accent); }
+.btn:hover { filter: brightness(1.05); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.ghost:hover { background: var(--surface-2); }
+.btn.small { padding: 6px 12px; font-size: 13px; }
+.cmd .btn { background: #1C3247; color: var(--term-text); border-color: var(--term-line); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 500 13px var(--mono); padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+textarea, input[type="text"], select, input[type="number"] { font: 14px/1.5 var(--mono); color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; }
+textarea { min-height: 150px; resize: vertical; }
+input[type="text"], select, input[type="number"] { width: auto; min-width: 0; }
+label { font-size: 14px; }
+
+/* resultados */
+.result { border-top: 1px dashed var(--line); padding-top: 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; }
+.result-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.result-head h3 { font-size: 18px; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font: 600 12px var(--body); letter-spacing: .02em; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.tag.good { background: var(--good-bg); color: var(--good); }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.info { background: var(--info-bg); color: var(--info); }
+.tag.neutral { background: var(--surface-2); color: var(--muted); }
+.tag.example { background: var(--accent-fill); color: var(--on-accent); }
+.kv { display: grid; grid-template-columns: minmax(130px, max-content) minmax(0, 1fr); gap: 8px 18px; margin: 0; }
+.kv dt { color: var(--muted); font-size: 14px; }
+.kv dd { margin: 0; color: var(--ink); font-family: var(--mono); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; overflow-wrap: anywhere; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { background: var(--surface-2); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
+.tile .v { font: 600 clamp(16px, 1.6vw, 20px) var(--mono); overflow-wrap: anywhere; color: var(--ink); font-variant-numeric: tabular-nums; }
+.tile .k { font-size: 13px; color: var(--muted); }
+.notes { display: grid; gap: 8px; }
+.note { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 12px; align-items: start; font-size: 15px; padding: 10px 14px; border-radius: 10px; background: var(--surface-2); }
+.note::before { content: ''; width: 10px; height: 10px; border-radius: 50%; margin-top: 7px; background: var(--muted); }
+.note.good::before { background: var(--good); } .note.warn::before { background: var(--warn); } .note.bad::before { background: var(--bad); } .note.info::before { background: var(--info); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+table.data { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.data th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding: 10px 12px; background: var(--surface-2); white-space: nowrap; }
+table.data td { padding: 9px 12px; border-top: 1px solid var(--line); vertical-align: middle; font-variant-numeric: tabular-nums; }
+table.data td.mono { font-family: var(--mono); color: var(--ink); white-space: nowrap; }
+.hbar { height: 10px; border-radius: 99px; background: var(--surface-2); min-width: 80px; position: relative; overflow: hidden; }
+.hbar span { position: absolute; inset: 0 auto 0 0; background: var(--teal); border-radius: 99px; }
+.empty { color: var(--muted); font-size: 14px; padding: 14px; border: 1px dashed var(--line); border-radius: 10px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.box { background: var(--surface-2); border-radius: 12px; padding: 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
+.box h4 { margin: 0; font-size: 15px; color: var(--ink); }
+svg.chart { width: 100%; height: auto; display: block; }
+svg.chart .axis { stroke: var(--line); }
+svg.chart .lbl { fill: var(--muted); font: 11px var(--mono); }
+svg.chart .val { fill: var(--ink); font: 600 11px var(--mono); }
+svg.chart .bar { fill: var(--teal); }
+svg.chart .bar.good { fill: var(--good); }
+svg.chart .bar.warn { fill: var(--accent-fill); }
+svg.chart .bar.bad { fill: var(--bad); }
+.hbar span.good { background: var(--good); } .hbar span.warn { background: var(--accent-fill); } .hbar span.bad { background: var(--bad); }
+.tile .v.good { color: var(--good); } .tile .v.warn { color: var(--warn); } .tile .v.bad { color: var(--bad); }
+td.mono.bad { color: var(--bad); font-weight: 600; } td.mono.warn { color: var(--warn); font-weight: 600; }
+.form { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: end; }
+.form .f { display: grid; gap: 4px; }
+.form .f input { width: 120px; }
+svg.chart .lost { fill: var(--bad); font: 700 13px var(--mono); }
+.flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.flow .node { background: var(--surface-2); border-radius: 12px; padding: 10px 14px; display: grid; gap: 2px; }
+.flow .node.dark { background: var(--term-bg); color: var(--term-text); }
+.flow .node b { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.flow .node.dark b { color: var(--term-amber); }
+.flow .node span { font: 600 15px var(--mono); color: var(--ink); }
+.flow .node.dark span { color: var(--term-text); }
+.flow .arrow { color: var(--muted); font-size: 20px; }
+
+/* simulador */
+.sim { display: grid; gap: 16px; }
+.sim svg { width: 100%; height: auto; display: block; background: var(--surface-2); border-radius: 12px; }
+.sim .n rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.sim .n.on rect { stroke: var(--accent-fill); stroke-width: 3; }
+.sim .n text { fill: var(--ink); font: 600 13px var(--body); }
+.sim .n text.sub { fill: var(--muted); font: 11px var(--mono); }
+.sim .link { stroke: var(--line); stroke-width: 3; }
+.sim .link.on { stroke: var(--accent-fill); }
+.sim .pkt { fill: var(--accent-fill); stroke: var(--ink); stroke-width: 1.5; }
+.sim-panel { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; }
+.inspector { background: var(--term-bg); color: var(--term-text); border-radius: 12px; padding: 16px; font: 13px/1.6 var(--mono); display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.inspector .k { color: var(--term-muted); }
+.inspector .h { color: var(--term-amber); font-weight: 600; }
+.steplist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 330px; overflow-y: auto; }
+.steplist li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px; padding: 6px 10px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+.steplist li.cur { background: var(--warn-bg); color: var(--ink); }
+.steplist li.past { color: var(--muted); }
+.steplist .i { font: 600 12px var(--mono); color: var(--accent); }
+.steplist .ms { font: 12px var(--mono); color: var(--muted); }
+.phases { display: flex; height: 26px; border-radius: 8px; overflow: hidden; }
+.phases span { display: flex; align-items: center; justify-content: center; font: 600 11px var(--mono); color: #0E1B2A; min-width: 0; overflow: hidden; white-space: nowrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+
+/* calculadora */
+.bits { display: flex; flex-wrap: wrap; gap: 10px; }
+.octet { display: flex; gap: 2px; }
+.octet span { width: 18px; height: 26px; display: grid; place-items: center; font: 600 12px var(--mono); border-radius: 4px; }
+.octet span.net { background: var(--good-bg); color: var(--teal); }
+.octet span.host { background: var(--warn-bg); color: var(--accent); }
+
+/* quiz */
+.q { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.q p.qt { color: var(--ink); font-weight: 600; }
+.q .opts { display: grid; gap: 6px; }
+.q button.opt { text-align: left; font: 15px var(--body); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.q button.opt:hover:not(:disabled) { background: var(--surface-2); }
+.q button.opt.right { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+.q button.opt.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.q button.opt:disabled { cursor: default; }
+.q .fb { font-size: 14px; }
+.sites { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.site { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; text-decoration: none; background: var(--surface); }
+.site:hover { background: var(--surface-2); }
+.site b { font: 600 14px var(--mono); color: var(--blue); }
+.site span { font-size: 14px; color: var(--text); }
+.site em { font-style: normal; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.check { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; }
+.check input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--teal); }
+.pbar { display: grid; grid-template-columns: minmax(90px, 150px) minmax(40px, 1fr) max-content; gap: 10px; align-items: center; }
+.pbar > span:first-child { font-size: 14px; }
+footer { color: var(--muted); font-size: 13px; padding-block: 0 40px; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .toc { position: static; }
+  .toc ol { display: flex; flex-wrap: wrap; gap: 6px; }
+  .toc a { grid-template-columns: auto auto 14px; border: 1px solid var(--line); background: var(--surface); padding: 6px 10px; }
+  .toc .ok { width: 12px; height: 12px; }
+  .top .wrap { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .panel-os { justify-items: start; }
+  .progress p { text-align: left; }
+  .sim-panel { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .mission { padding: 20px 16px; }
+  .mhead { grid-template-columns: auto minmax(0, 1fr); }
+  .mhead .status { grid-column: 1 / -1; justify-self: start; }
+  .kv { grid-template-columns: minmax(0, 1fr); gap: 2px 0; }
+  .kv dd { margin-bottom: 8px; }
+  .progress { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Redes na Prática · laboratório</p>
+      <h1>Laboratório de Redes</h1>
+      <p class="lead">Rode os comandos no seu computador, cole o resultado e veja o que cada número significa. Cada missão já vem com um exemplo analisado para você comparar.</p>
+      <p class="privacy">● Tudo o que você cola é analisado só neste navegador. Nada é enviado para lugar nenhum.</p>
+    </div>
+    <div class="panel-os">
+      <span class="label" id="os-label">Seu sistema</span>
+      <div class="seg" role="group" aria-labelledby="os-label">
+        <button type="button" data-os="windows" aria-pressed="true">Windows</button>
+        <button type="button" data-os="linux" aria-pressed="false">Linux</button>
+        <button type="button" data-os="macos" aria-pressed="false">macOS</button>
+      </div>
+      <div class="progress" aria-live="polite">
+        <div class="bar"><span id="prog-bar"></span></div>
+        <p id="prog-text">0 de 14 missões concluídas</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <nav class="toc" aria-label="Missões">
+    <p class="toc-title">Missões</p>
+    <ol id="toc"></ol>
+  </nav>
+
+  <main class="missions">
+
+    <section class="mission" id="m1" data-title="Seu IP local">
+      <div class="mhead"><span class="mnum">··</span><h2>Seu IP local</h2><span class="status">A fazer</span></div>
+      <p class="why">Descubra as quatro informações de rede do seu computador: IP, máscara, gateway e DNS. Elas serão usadas nas próximas missões.</p>
+      <div class="steps">
+        <div class="step"><span class="step-label">1. Abra o terminal e rode o comando</span><div class="cmd" data-cmd="ipconfig"></div><p class="hint" data-hint="terminal"></p></div>
+        <div class="step"><label class="step-label" for="in-m1">2. Cole aqui tudo o que apareceu</label><textarea id="in-m1" spellcheck="false" placeholder="Cole a saída do comando aqui"></textarea>
+          <div class="row"><button class="btn" type="button" data-analyze="m1">Analisar</button><button class="btn ghost" type="button" data-example="m1">Ver exemplo</button></div></div>
+      </div>
+      <div class="result" id="out-m1" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m2" data-title="Seu IP global">
+      <div class="mhead"><span class="mnum">··</span><h2>Seu IP global</h2><span class="status">A fazer</span></div>
+      <p class="why">O IP público não aparece no ipconfig: ele é do roteador, não do seu computador. Só dá para vê-lo de fora, por um site.</p>
+      <div class="steps">
+        <div class="step"><span class="step-label">1. Abra um destes sites</span>
+          <div class="row"><a class="btn ghost" href="https://meuip.com/" target="_blank" rel="noopener">meuip.com ↗</a><a class="btn ghost" href="https://ipinfo.io" target="_blank" rel="noopener">ipinfo.io ↗</a></div></div>
+        <div class="step"><label class="step-label" for="in-m2">2. Digite o IP que o site mostrou</label>
+          <div class="row"><input type="text" id="in-m2" inputmode="decimal" placeholder="ex.: 203.0.113.45" autocomplete="off"><button class="btn" type="button" data-analyze="m2">Comparar</button></div></div>
+      </div>
+      <div class="result" id="out-m2" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m3" data-title="Ping e latência">
+      <div class="mhead"><span class="mnum">··</span><h2>Ping e latência</h2><span class="status">A fazer</span></div>
+      <p class="why">Teste destinos cada vez mais distantes: o seu roteador, um servidor no Brasil e um do outro lado do mundo. Compare a latência, o jitter e a perda de cada um.</p>
+      <div class="steps">
+        <div class="step"><span class="step-label">1. Escolha o destino</span><div class="chips" id="ping-targets"></div></div>
+        <div class="step"><span class="step-label">2. Rode o comando</span><div class="cmd" data-cmd="ping" id="cmd-ping"></div><p class="hint">Para medir o jitter com mais precisão, envie 20 pacotes: <code>ping -n 20</code> no Windows ou <code>ping -c 20</code> no Linux e macOS.</p></div>
+        <div class="step"><label class="step-label" for="in-m3">3. Cole o resultado</label><textarea id="in-m3" spellcheck="false" placeholder="Cole a saída do ping aqui"></textarea>
+          <div class="row"><button class="btn" type="button" data-analyze="m3">Analisar</button><button class="btn ghost" type="button" data-example="m3">Ver exemplo</button></div></div>
+      </div>
+      <div class="result" id="out-m3" aria-live="polite"></div>
+      <div class="step"><span class="step-label">Seus testes lado a lado</span><div id="ping-history"></div></div>
+    </section>
+
+    <section class="mission" id="m12" data-title="Ping falhou? Teste a porta">
+      <div class="mhead"><span class="mnum">··</span><h2>Ping falhou? Teste a porta</h2><span class="status">A fazer</span></div>
+      <p class="why">Muitos servidores bloqueiam o ping (ICMP) por segurança e continuam no ar. O site usa TCP na porta 443, então teste essa porta diretamente. Experimente com <span class="mono">www.u-tokyo.ac.jp</span>: ele não responde ao ping, mas abre no navegador.</p>
+      <div class="steps">
+        <div class="step"><span class="step-label">1. Escolha o servidor e a porta</span><div class="chips" id="port-targets"></div>
+          <div class="row"><label for="port-num">Porta</label><select id="port-num"><option value="443">443 · HTTPS</option><option value="80">80 · HTTP</option><option value="22">22 · SSH</option><option value="3389">3389 · RDP</option></select></div></div>
+        <div class="step"><span class="step-label">2. Rode o comando</span><div class="cmd" data-cmd="port" id="cmd-port"></div><p class="hint" id="port-hint"></p></div>
+        <div class="step"><label class="step-label" for="in-m12">3. Cole o resultado</label><textarea id="in-m12" spellcheck="false" placeholder="Cole a saída aqui"></textarea>
+          <div class="row"><button class="btn" type="button" data-analyze="m12">Analisar</button><button class="btn ghost" type="button" data-example="m12">Ver exemplo</button></div></div>
+      </div>
+      <div class="result" id="out-m12" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m4" data-title="A física da latência">
+      <div class="mhead"><span class="mnum">··</span><h2>A física da latência</h2><span class="status">A fazer</span></div>
+      <p class="why">Nenhuma internet é mais rápida que a luz. Na fibra óptica, a luz anda a cerca de 200 mil km por segundo, então a distância já impõe um ping mínimo. Veja quanto.</p>
+      <div class="row">
+        <label for="phys-dest">Destino a partir de São Paulo</label>
+        <select id="phys-dest"></select>
+        <label for="phys-meas">Seu ping até lá (ms)</label>
+        <input type="number" id="phys-meas" min="0" max="2000" placeholder="opcional" style="width:120px">
+      </div>
+      <div class="result" id="out-m4" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m13" data-title="Velocidade na prática">
+      <div class="mhead"><span class="mnum">··</span><h2>Velocidade na prática</h2><span class="status">A fazer</span></div>
+      <p class="why">Faça um teste de velocidade e traduza os números para o dia a dia. Se puder, teste uma vez no cabo e outra no Wi-Fi para comparar.</p>
+      <div class="steps">
+        <div class="step"><span class="step-label">1. Faça o teste em um destes sites</span>
+          <div class="row"><a class="btn ghost" href="https://simet.nic.br" target="_blank" rel="noopener">simet.nic.br ↗</a><a class="btn ghost" href="https://www.speedtest.net" target="_blank" rel="noopener">speedtest.net ↗</a><a class="btn ghost" href="https://fast.com" target="_blank" rel="noopener">fast.com ↗</a></div></div>
+        <div class="step"><span class="step-label">2. Anote os resultados</span>
+          <form class="form" id="speed-form">
+            <div class="f"><label for="sp-type">Conexão</label><select id="sp-type"><option>Cabo</option><option>Wi-Fi</option><option>Dados móveis</option></select></div>
+            <div class="f"><label for="sp-down">Download (Mbps)</label><input type="number" id="sp-down" min="0" step="0.1" required></div>
+            <div class="f"><label for="sp-up">Upload (Mbps)</label><input type="number" id="sp-up" min="0" step="0.1"></div>
+            <div class="f"><label for="sp-ping">Ping (ms)</label><input type="number" id="sp-ping" min="0" step="0.1"></div>
+            <div class="f"><label for="sp-plan">Plano contratado (Mbps)</label><input type="number" id="sp-plan" min="0" step="1" placeholder="opcional"></div>
+            <button class="btn" type="submit">Adicionar medição</button>
+          </form></div>
+      </div>
+      <div class="result" id="out-m13" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m5" data-title="Traceroute">
+      <div class="mhead"><span class="mnum">··</span><h2>O caminho dos pacotes</h2><span class="status">A fazer</span></div>
+      <p class="why">O traceroute mostra cada roteador entre você e o destino. Descubra quantos saltos existem, onde entra o provedor e onde a latência aumenta.</p>
+      <div class="steps">
+        <div class="step"><span class="step-label">1. Escolha o destino</span><div class="chips" id="trace-targets"></div></div>
+        <div class="step"><span class="step-label">2. Rode o comando (leva até 1 minuto)</span><div class="cmd" data-cmd="trace" id="cmd-trace"></div></div>
+        <div class="step"><label class="step-label" for="in-m5">3. Cole o resultado</label><textarea id="in-m5" spellcheck="false" placeholder="Cole a saída do tracert/traceroute aqui"></textarea>
+          <div class="row"><button class="btn" type="button" data-analyze="m5">Analisar</button><button class="btn ghost" type="button" data-example="m5">Ver exemplo</button></div></div>
+      </div>
+      <div class="result" id="out-m5" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m6" data-title="DNS">
+      <div class="mhead"><span class="mnum">··</span><h2>Perguntando ao DNS</h2><span class="status">A fazer</span></div>
+      <p class="why">Veja qual servidor DNS responde por você e quais endereços estão por trás de um nome de site.</p>
+      <div class="steps">
+        <div class="step"><span class="step-label">1. Escolha o que consultar</span><div class="chips" id="dns-targets"></div></div>
+        <div class="step"><span class="step-label">2. Rode o comando</span><div class="cmd" data-cmd="dns" id="cmd-dns"></div></div>
+        <div class="step"><label class="step-label" for="in-m6">3. Cole o resultado</label><textarea id="in-m6" spellcheck="false" placeholder="Cole a saída do nslookup aqui"></textarea>
+          <div class="row"><button class="btn" type="button" data-analyze="m6">Analisar</button><button class="btn ghost" type="button" data-example="m6">Ver exemplo</button></div></div>
+      </div>
+      <div class="result" id="out-m6" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m7" data-title="Jornada de uma requisição">
+      <div class="mhead"><span class="mnum">··</span><h2>A jornada de uma requisição</h2><span class="status">A fazer</span></div>
+      <p class="why">Acompanhe, pacote por pacote, o que acontece quando você abre <span class="mono">https://www.exemplo.com.br</span>. Mude a latência e veja como o tempo total cresce. Os endereços usam o seu IP das missões 1 e 2.</p>
+      <div class="sim">
+        <div class="row">
+          <label for="sim-rtt">Latência até o site: <b class="mono" id="sim-rtt-v">30 ms</b></label>
+          <input type="range" id="sim-rtt" min="5" max="300" step="5" value="30" style="flex:1;min-width:160px">
+        </div>
+        <div class="row">
+          <label class="check" style="grid-template-columns:22px auto"><input type="checkbox" id="sim-cache"><span>Endereço já está no cache DNS</span></label>
+          <label class="check" style="grid-template-columns:22px auto"><input type="checkbox" id="sim-https" checked><span>Usar HTTPS (com TLS)</span></label>
+        </div>
+        <svg id="sim-svg" viewBox="0 0 680 300" role="img" aria-label="Diagrama: seu computador, roteador, internet, servidor DNS e servidor do site"></svg>
+        <div class="row"><button class="btn ghost" type="button" id="sim-prev">← Anterior</button><button class="btn" type="button" id="sim-play">▶ Reproduzir</button><button class="btn ghost" type="button" id="sim-next">Próximo →</button><button class="btn ghost" type="button" id="sim-reset">Reiniciar</button></div>
+        <div class="sim-panel">
+          <div class="inspector" id="sim-inspector" aria-live="polite"></div>
+          <ol class="steplist" id="sim-steps"></ol>
+        </div>
+        <div class="phases" id="sim-phases"></div>
+        <div class="legend" id="sim-legend"></div>
+      </div>
+    </section>
+
+    <section class="mission" id="m14" data-title="Cronometre uma requisição">
+      <div class="mhead"><span class="mnum">··</span><h2>Cronometre uma requisição real</h2><span class="status">A fazer</span></div>
+      <p class="why">O curl mede quanto durou cada etapa de uma visita de verdade a um site: DNS, conexão TCP, TLS, resposta do servidor e download. Compare com o simulador acima.</p>
+      <div class="steps">
+        <div class="step"><span class="step-label">1. Escolha o site</span><div class="chips" id="curl-targets"></div></div>
+        <div class="step"><span class="step-label">2. Rode o comando duas vezes seguidas</span><div class="cmd" data-cmd="curl" id="cmd-curl"></div><p class="hint" id="curl-hint"></p></div>
+        <div class="step"><label class="step-label" for="in-m14">3. Cole as duas linhas do resultado</label><textarea id="in-m14" spellcheck="false" placeholder="dns=… tcp=… tls=… ttfb=… total=… codigo=…"></textarea>
+          <div class="row"><button class="btn" type="button" data-analyze="m14">Analisar</button><button class="btn ghost" type="button" data-example="m14">Ver exemplo</button></div></div>
+      </div>
+      <div class="result" id="out-m14" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m8" data-title="Calculadora de rede">
+      <div class="mhead"><span class="mnum">··</span><h2>Calculadora de rede</h2><span class="status">A fazer</span></div>
+      <p class="why">Digite um IP e o prefixo para ver a rede, o broadcast e a faixa de máquinas. Depois confira se dois endereços estão na mesma rede.</p>
+      <div class="row">
+        <label for="calc-ip">IP</label><input type="text" id="calc-ip" value="192.168.0.15" style="width:170px" autocomplete="off">
+        <label for="calc-prefix">Máscara</label><select id="calc-prefix"></select>
+        <button class="btn ghost small" type="button" id="calc-mine">Usar meu IP</button>
+      </div>
+      <div class="result" id="out-m8" aria-live="polite"></div>
+      <div class="row">
+        <label for="calc-ip2">Outro IP para comparar</label><input type="text" id="calc-ip2" value="192.168.1.20" style="width:170px" autocomplete="off">
+      </div>
+      <div id="out-m8b" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m9" data-title="Duas máquinas">
+      <div class="mhead"><span class="mnum">··</span><h2>Conectando duas máquinas</h2><span class="status">A fazer</span></div>
+      <p class="why">Em dupla, com o computador ao lado. Vocês já estão na mesma rede do laboratório: descubram se as máquinas se enxergam e o que o firewall permite.</p>
+      <div class="steps">
+        <div class="step"><label class="step-label" for="pair-ip">1. Peça o IP do colega (missão 1 no computador dele) e digite aqui</label>
+          <div class="row"><input type="text" id="pair-ip" placeholder="ex.: 192.168.0.22" style="width:190px" autocomplete="off"><span id="pair-same"></span></div></div>
+        <div class="step"><span class="step-label">2. Mande um ping para o colega</span><div class="cmd" data-cmd="ping" id="cmd-pair"></div>
+          <textarea id="in-m9" spellcheck="false" placeholder="Cole aqui o resultado do ping para o colega"></textarea>
+          <div class="row"><button class="btn" type="button" data-analyze="m9">Analisar ping</button></div>
+          <div id="out-m9" aria-live="polite"></div></div>
+        <div class="step"><span class="step-label">3. Veja quem o seu computador já conhece (tabela ARP)</span><div class="cmd" data-cmd="arp"></div>
+          <p class="hint">Depois do ping, o MAC do colega deve aparecer na lista.</p>
+          <textarea id="in-m9b" spellcheck="false" placeholder="Cole a saída do arp aqui"></textarea>
+          <div class="row"><button class="btn" type="button" data-analyze="m9b">Analisar ARP</button><button class="btn ghost" type="button" data-example="m9b">Ver exemplo</button></div>
+          <div id="out-m9b" aria-live="polite"></div></div>
+        <div class="step"><span class="step-label">4. Extra, se o laboratório tiver Python: compartilhe uma pasta pela rede</span>
+          <div class="cmd" data-cmd="server"></div>
+          <p class="hint">Rode dentro de uma pasta qualquer. O colega abre <code id="pair-url">http://SEU_IP:8000</code> no navegador. Se não abrir, o firewall está bloqueando a porta 8000: é a segurança funcionando. Feche com Ctrl+C ao terminar.</p></div>
+      </div>
+    </section>
+
+    <section class="mission" id="m10" data-title="Portas abertas">
+      <div class="mhead"><span class="mnum">··</span><h2>Portas abertas no seu computador</h2><span class="status">A fazer</span></div>
+      <p class="why">Todo programa que aceita conexões “escuta” numa porta. Veja quais portas o seu computador deixa abertas e com quem ele está conversando agora.</p>
+      <div class="steps">
+        <div class="step"><span class="step-label">1. Rode o comando</span><div class="cmd" data-cmd="netstat"></div></div>
+        <div class="step"><label class="step-label" for="in-m10">2. Cole o resultado</label><textarea id="in-m10" spellcheck="false" placeholder="Cole a saída aqui"></textarea>
+          <div class="row"><button class="btn" type="button" data-analyze="m10">Analisar</button><button class="btn ghost" type="button" data-example="m10">Ver exemplo</button></div></div>
+      </div>
+      <div class="result" id="out-m10" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="m11" data-title="Desafio final">
+      <div class="mhead"><span class="mnum">··</span><h2>Desafio final</h2><span class="status">A fazer</span></div>
+      <p class="why">Situações reais de suporte. Escolha a resposta e veja a explicação.</p>
+      <div id="quiz" class="steps"></div>
+      <div id="quiz-score" aria-live="polite"></div>
+    </section>
+
+    <section class="mission" id="sites" data-title="Sites úteis">
+      <div class="mhead"><span class="mnum">+</span><h2>Sites úteis</h2><span></span></div>
+      <div class="sites" id="sites-list"></div>
+    </section>
+
+    <footer>Laboratório de Redes · os exemplos usam faixas de endereços reservadas para documentação (198.51.100.0/24 e 203.0.113.0/24).</footer>
+  </main>
+</div>
+
+<script>
+/* ===== Núcleo: utilitários de IP e analisadores de saída de comandos ===== */
+const IPV4_RE = /(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}/;
+const IPV4_G = new RegExp(IPV4_RE.source, 'g');
+
+function isIPv4(s) { return new RegExp('^' + IPV4_RE.source + '$').test(String(s).trim()); }
+function ipToInt(ip) { return ip.split('.').reduce((a, o) => ((a << 8) + Number(o)) >>> 0, 0) >>> 0; }
+function intToIp(n) { return [24, 16, 8, 0].map(s => (n >>> s) & 255).join('.'); }
+function maskFromPrefix(p) { return p === 0 ? 0 : ((0xFFFFFFFF << (32 - p)) >>> 0); }
+function prefixFromMask(mask) {
+  if (!isIPv4(mask)) return null;
+  const n = ipToInt(mask);
+  let p = 0; while (p < 32 && (n & (1 << (31 - p))) >>> 0) p++;
+  return maskFromPrefix(p) === n ? p : null;
+}
+function inRange(ip, base, prefix) { const m = maskFromPrefix(prefix); return ((ipToInt(ip) & m) >>> 0) === ((ipToInt(base) & m) >>> 0); }
+
+const RANGES = [
+  ['255.255.255.255', 32, 'broadcast', 'Broadcast', 'Endereço para falar com todos da rede local ao mesmo tempo.'],
+  ['0.0.0.0', 8, 'reserved', 'Reservado', '“Esta rede”: não é usado por máquinas.'],
+  ['127.0.0.0', 8, 'loopback', 'Loopback', 'A própria máquina (localhost). Nunca sai do computador.'],
+  ['10.0.0.0', 8, 'private', 'Privado', 'Faixa privada 10.0.0.0/8: só vale dentro de uma rede local.'],
+  ['172.16.0.0', 12, 'private', 'Privado', 'Faixa privada 172.16.0.0/12: só vale dentro de uma rede local.'],
+  ['192.168.0.0', 16, 'private', 'Privado', 'Faixa privada 192.168.0.0/16: a mais comum em casas e escritórios.'],
+  ['100.64.0.0', 10, 'cgnat', 'CGNAT', 'Faixa usada pelo provedor no CGNAT: vários clientes dividem o mesmo IP público.'],
+  ['169.254.0.0', 16, 'apipa', 'APIPA', 'O computador não recebeu IP do DHCP e criou um sozinho. Não vai navegar.'],
+  ['192.0.2.0', 24, 'doc', 'Documentação', 'Faixa reservada para exemplos em livros e documentação.'],
+  ['198.51.100.0', 24, 'doc', 'Documentação', 'Faixa reservada para exemplos em livros e documentação.'],
+  ['203.0.113.0', 24, 'doc', 'Documentação', 'Faixa reservada para exemplos em livros e documentação.'],
+  ['224.0.0.0', 4, 'multicast', 'Multicast', 'Endereço de grupo: um pacote para vários receptores.'],
+  ['240.0.0.0', 4, 'reserved', 'Reservado', 'Faixa reservada, não usada na internet.'],
+];
+function classifyIp(ip) {
+  if (!isIPv4(ip)) return { key: 'invalid', label: 'Inválido', desc: 'Não é um endereço IPv4 válido.' };
+  for (const [base, p, key, label, desc] of RANGES) if (inRange(ip, base, p)) return { key, label, desc };
+  return { key: 'public', label: 'Público', desc: 'Endereço válido na internet, único no mundo.' };
+}
+function subnetInfo(ip, prefix) {
+  const m = maskFromPrefix(prefix), n = ipToInt(ip);
+  const net = (n & m) >>> 0, bc = (net | (~m >>> 0)) >>> 0;
+  let first, last, hosts;
+  if (prefix === 32) { first = last = net; hosts = 1; }
+  else if (prefix === 31) { first = net; last = bc; hosts = 2; }
+  else { first = net + 1; last = bc - 1; hosts = Math.pow(2, 32 - prefix) - 2; }
+  return { ip, prefix, mask: intToIp(m), wildcard: intToIp((~m) >>> 0), network: intToIp(net), broadcast: intToIp(bc), first: intToIp(first), last: intToIp(last), hosts };
+}
+function sameNetwork(a, b, prefix) { const m = maskFromPrefix(prefix); return ((ipToInt(a) & m) >>> 0) === ((ipToInt(b) & m) >>> 0); }
+function ipv4s(s) { return (String(s).match(IPV4_G) || []); }
+function norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+
+/* ---------- ipconfig / ip a / ifconfig ---------- */
+function parseIpconfig(text) {
+  const lines = String(text).replace(/\r/g, '').split('\n');
+  const adapters = []; let cur = null; let lastKey = null; let hostname = null; let format = null;
+  const isWin = /adaptador|adapter|configura[cç][aã]o de ip do windows|windows ip configuration/i.test(text);
+  const isLinuxIp = /^\s*\d+:\s+[^:\s]+:\s+</m.test(text);
+  const isMac = /flags=\d+</.test(text) && !isLinuxIp;
+  const newAd = (name) => { cur = { name, ipv4: null, mask: null, prefix: null, gateway: [], dns: [], mac: null, dhcp: null, disconnected: false, description: '', ipv6: [] }; adapters.push(cur); };
+
+  if (isWin) {
+    format = 'windows';
+    for (const raw of lines) {
+      if (!raw.trim()) continue;
+      if (!/^\s/.test(raw) && /:\s*$/.test(raw)) {
+        const name = raw.trim().replace(/:\s*$/, '');
+        if (/adaptador|adapter/i.test(name)) { newAd(name); lastKey = null; }
+        else { cur = null; lastKey = null; }
+        continue;
+      }
+      const idx = raw.indexOf(':');
+      let key = null, val = null;
+      if (idx > -1) {
+        const rawKey = raw.slice(0, idx).trim();
+        if (/[ .]/.test(rawKey) && /[A-Za-zÀ-ÿ]{3,}/.test(rawKey)) { key = norm(rawKey.replace(/[ .]+$/, '')); val = raw.slice(idx + 1).trim(); }
+      }
+      if (key === null) { val = raw.trim(); key = lastKey; if (!key) continue; }
+      else lastKey = key;
+      const clean = val.replace(/\((preferencial|preferred|duplicado|duplicate|tentativa|tentative)\)/ig, '').trim();
+      if (/nome do host|host name/.test(key)) { hostname = clean; continue; }
+      if (!cur) continue;
+      if (/ipv4|^endereco ip$|^ip address$/.test(key) && !/dhcp|servidor/.test(key)) { const ip = ipv4s(clean)[0]; if (ip) cur.ipv4 = ip; }
+      else if (/ipv6/.test(key)) { if (clean) cur.ipv6.push(clean); }
+      else if (/mascara|subnet mask/.test(key)) { const m = ipv4s(clean)[0]; if (m) { cur.mask = m; cur.prefix = prefixFromMask(m); } }
+      else if (/gateway/.test(key)) { ipv4s(clean).forEach(g => cur.gateway.push(g)); }
+      else if (/servidores dns|dns servers/.test(key)) { ipv4s(clean).forEach(d => cur.dns.push(d)); }
+      else if (/endereco fisico|physical address/.test(key)) { if (clean) cur.mac = clean.toLowerCase().replace(/-/g, ':'); }
+      else if (/dhcp habilitado|dhcp enabled/.test(key)) { cur.dhcp = /^(sim|yes)/i.test(clean); }
+      else if (/estado da midia|media state/.test(key)) { cur.disconnected = /desconect|disconnect/i.test(clean); }
+      else if (/^descricao|^description/.test(key)) { cur.description = clean; }
+    }
+  } else if (isLinuxIp || isMac) {
+    format = isMac ? 'macos' : 'linux';
+    for (const raw of lines) {
+      let m;
+      if (isLinuxIp && (m = raw.match(/^\s*\d+:\s+([^:@\s]+)[@:]/))) { newAd(m[1]); continue; }
+      if (isMac && (m = raw.match(/^([a-z0-9]+):\s+flags=/i))) { newAd(m[1]); continue; }
+      if ((m = raw.match(/default\s+via\s+(\S+)(?:\s+dev\s+(\S+))?/))) {
+        const ad = adapters.find(a => a.name === m[2]) || adapters.find(a => a.ipv4 && !a.ipv4.startsWith('127.'));
+        if (ad && isIPv4(m[1])) ad.gateway.push(m[1]); continue;
+      }
+      if ((m = raw.match(/^\s*gateway:\s*(\S+)/i)) || (m = raw.match(/^default\s+(\S+)\s+\S+\s+(\S+)/))) {
+        const ad = adapters.find(a => a.ipv4 && !a.ipv4.startsWith('127.') && !a.gateway.length);
+        if (ad && isIPv4(m[1])) ad.gateway.push(m[1]); continue;
+      }
+      if ((m = raw.match(/^\s*nameserver\s+(\S+)/))) { const ad = adapters.find(a => a.ipv4 && !a.ipv4.startsWith('127.')); if (ad && isIPv4(m[1])) ad.dns.push(m[1]); continue; }
+      if (!cur) continue;
+      if ((m = raw.match(/^\s*inet\s+([\d.]+)\/(\d+)/))) { if (!cur.ipv4) { cur.ipv4 = m[1]; cur.prefix = Number(m[2]); cur.mask = intToIp(maskFromPrefix(cur.prefix)); } }
+      else if ((m = raw.match(/^\s*inet\s+([\d.]+)\s+netmask\s+(0x[0-9a-f]+|[\d.]+)/i))) {
+        if (!cur.ipv4) { cur.ipv4 = m[1]; const mk = m[2].startsWith('0x') ? intToIp(parseInt(m[2], 16) >>> 0) : m[2]; cur.mask = mk; cur.prefix = prefixFromMask(mk); }
+      }
+      else if ((m = raw.match(/^\s*inet6\s+(\S+)/))) cur.ipv6.push(m[1]);
+      else if ((m = raw.match(/^\s*(?:link\/ether|ether)\s+([0-9a-f:]{17})/i))) cur.mac = m[1].toLowerCase();
+      else if (/state\s+DOWN|status:\s*inactive/.test(raw)) cur.disconnected = true;
+    }
+    adapters.forEach(a => { if (a.ipv4 && a.ipv4.startsWith('127.')) a.loopback = true; });
+  }
+  if (!adapters.length) {
+    const ips = ipv4s(text);
+    if (ips.length) { format = 'desconhecido'; newAd('Interface encontrada'); cur.ipv4 = ips[0]; }
+  }
+  adapters.forEach(a => {
+    a.virtual = /virtualbox|vmware|hyper-v|vethernet|docker|virbr|veth|wsl|vboxnet|loopback pseudo|bridge\d|utun|awdl|llw/i.test(a.name + ' ' + a.description);
+  });
+  const usable = adapters.filter(a => a.ipv4 && !a.loopback && !a.disconnected);
+  const primary = usable.find(a => a.gateway.length && !a.virtual) || usable.find(a => !a.virtual) || usable[0] || null;
+  return { format, hostname, adapters, primary };
+}
+
+/* ---------- ping ---------- */
+function parsePing(text) {
+  const t = String(text).replace(/\r/g, '');
+  const res = { target: null, ip: null, replies: [], sent: null, received: null, ttl: null, unreachable: false, dnsFail: false, generalFail: false };
+  let m;
+  if ((m = t.match(/(?:Disparando|Pinging|Fazendo ping|PING)\s+(\S+)\s*(?:\[([\d.]+)\]|\(([\d.]+)\))?/i))) {
+    res.target = m[1].replace(/[\[\]()]/g, ''); res.ip = m[2] || m[3] || (isIPv4(res.target) ? res.target : null);
+  }
+  if (/n[aã]o p[oô]de encontrar o host|could not find host|name or service not known|nome ou servi[cç]o desconhecido|cannot resolve|unknown host|temporary failure in name resolution/i.test(t)) res.dnsFail = true;
+  if (/falha geral|general failure|network is unreachable|rede inacess[ií]vel/i.test(t)) res.generalFail = true;
+  let seq = 0;
+  for (const line of t.split('\n')) {
+    const tm = line.match(/(?:tempo|time)\s*([=<])\s*([\d.,]+)\s*ms/i);
+    if (tm) {
+      seq++;
+      let v = parseFloat(tm[2].replace(',', '.')); if (tm[1] === '<') v = v / 2;
+      const s = line.match(/icmp_seq=(\d+)/i); const n = s ? Number(s[1]) : seq;
+      res.replies.push({ seq: n, time: v });
+      const ttl = line.match(/ttl\s*=\s*(\d+)/i); if (ttl) res.ttl = Number(ttl[1]);
+      continue;
+    }
+    if (/esgotado o tempo limite|request timed out|tempo limite/i.test(line)) { seq++; res.replies.push({ seq, time: null }); continue; }
+    if (/inacess[ií]vel|unreachable/i.test(line) && /resposta de|reply from|from\s/i.test(line)) { seq++; res.unreachable = true; res.replies.push({ seq, time: null, unreachable: true }); continue; }
+  }
+  if ((m = t.match(/Enviados\s*=\s*(\d+),\s*Recebidos\s*=\s*(\d+)/i)) || (m = t.match(/Sent\s*=\s*(\d+),\s*Received\s*=\s*(\d+)/i))) { res.sent = Number(m[1]); res.received = Number(m[2]); }
+  else if ((m = t.match(/(\d+)\s+packets?\s+transmitted,\s*(\d+)\s+(?:packets\s+)?received/i)) || (m = t.match(/(\d+)\s+pacotes transmitidos,\s*(\d+)\s+recebidos/i))) { res.sent = Number(m[1]); res.received = Number(m[2]); }
+  // Linux: preencher pacotes perdidos pela numeração icmp_seq
+  if (res.sent && res.replies.length && res.replies.every(r => r.time !== null) && res.replies.length < res.sent) {
+    const bySeq = new Map(res.replies.map(r => [r.seq, r]));
+    const filled = []; for (let i = 1; i <= res.sent; i++) filled.push(bySeq.get(i) || { seq: i, time: null });
+    res.replies = filled;
+  }
+  const times = res.replies.filter(r => r.time !== null).map(r => r.time);
+  if (res.sent === null) { res.sent = res.replies.length; res.received = times.length; }
+  const okReceived = res.unreachable ? times.length : res.received;
+  res.lossPct = res.sent ? Math.round(((res.sent - okReceived) / res.sent) * 1000) / 10 : null;
+  if (times.length) {
+    res.min = Math.min(...times); res.max = Math.max(...times);
+    res.avg = times.reduce((a, b) => a + b, 0) / times.length;
+    let d = 0; for (let i = 1; i < times.length; i++) d += Math.abs(times[i] - times[i - 1]);
+    res.jitter = times.length > 1 ? d / (times.length - 1) : 0;
+  }
+  if (res.ttl !== null) {
+    const init = res.ttl <= 64 ? 64 : res.ttl <= 128 ? 128 : 255;
+    res.ttlInit = init; res.hops = init - res.ttl;
+  }
+  res.ok = res.replies.length > 0 || res.dnsFail || res.generalFail;
+  return res;
+}
+
+/* ---------- tracert / traceroute ---------- */
+function parseTrace(text) {
+  const t = String(text).replace(/\r/g, '');
+  const res = { target: null, targetIp: null, hops: [] };
+  let m;
+  if ((m = t.match(/(?:Rastreando a rota para|Tracing route to|traceroute to)\s+(\S+)\s*(?:\[([\d.]+)\]|\(([\d.]+)\))?/i))) {
+    res.target = m[1]; res.targetIp = m[2] || m[3] || (isIPv4(m[1]) ? m[1] : null);
+  }
+  for (const line of t.split('\n')) {
+    const hm = line.match(/^\s{0,3}(\d{1,2})\s+(.*)$/);
+    if (!hm) continue;
+    const n = Number(hm[1]); const rest = hm[2];
+    if (n < 1 || n > 64) continue;
+    const times = []; let tm; const tre = /(<\s*)?(\d+(?:[.,]\d+)?)\s*ms/g;
+    while ((tm = tre.exec(rest))) { let v = parseFloat(tm[2].replace(',', '.')); if (tm[1]) v = v / 2; times.push(v); }
+    const stars = (rest.match(/\*/g) || []).length;
+    let ip = null, host = null;
+    const br = rest.match(/(\S+)\s+[\[(]((?:\d{1,3}\.){3}\d{1,3})[\])]/);
+    if (br) { host = br[1]; ip = br[2]; }
+    else { const all = ipv4s(rest.replace(/(\d+(?:[.,]\d+)?)\s*ms/g, '')); if (all.length) ip = all[0]; }
+    if (!times.length && !stars && !ip) continue;
+    const avg = times.length ? times.reduce((a, b) => a + b, 0) / times.length : null;
+    res.hops.push({ n, times, stars, ip, host: host && host !== ip ? host : null, avg, timeout: !times.length, cls: ip ? classifyIp(ip) : null });
+  }
+  const resp = res.hops.filter(h => h.avg !== null);
+  const jumps = [];
+  for (let i = 1; i < resp.length; i++) {
+    const d = resp[i].avg - resp[i - 1].avg;
+    if (d > 30) {
+      const later = resp.slice(i + 1);
+      const stays = !later.length || later.every(h => h.avg > resp[i - 1].avg + d * 0.6);
+      if (stays) jumps.push({ from: resp[i - 1], to: resp[i], delta: d });
+    }
+  }
+  res.jumps = jumps;
+  const last = res.hops[res.hops.length - 1];
+  res.reached = !!(last && last.ip && (res.targetIp ? last.ip === res.targetIp : !last.timeout));
+  res.cgnat = res.hops.find(h => h.cls && h.cls.key === 'cgnat') || null;
+  res.firstPublic = res.hops.find(h => h.cls && (h.cls.key === 'public' || h.cls.key === 'doc')) || null;
+  res.ok = res.hops.length > 0;
+  return res;
+}
+
+/* ---------- nslookup / dig ---------- */
+function parseDns(text) {
+  const t = String(text).replace(/\r/g, '');
+  const res = { server: null, serverIp: null, name: null, ipv4: [], ipv6: [], aliases: [], nonAuth: /n[aã]o [eé] resposta autoritativa|resposta n[aã]o autoritativa|non-authoritative/i.test(t), records: [], mx: [], notFound: /non-existent domain|nxdomain|n[aã]o existe|can't find|n[aã]o foi poss[ií]vel encontrar/i.test(t), fromDig: /ANSWER SECTION|;; QUESTION/i.test(t) };
+  const lines = t.split('\n');
+  if (res.fromDig) {
+    let inAns = false;
+    for (const l of lines) {
+      if (/ANSWER SECTION/i.test(l)) { inAns = true; continue; }
+      if (inAns && (!l.trim() || l.startsWith(';;'))) { inAns = false; }
+      if (inAns) { const p = l.trim().split(/\s+/); if (p.length >= 5) { if (p[3] === 'MX') res.mx.push({ pref: Number(p[4]), host: (p[5] || '').replace(/\.$/, '') }); res.records.push({ name: p[0].replace(/\.$/, ''), ttl: Number(p[1]), type: p[3], value: p.slice(4).join(' ') }); } }
+      const sv = l.match(/;;\s*SERVER:\s*([\d.]+)/i); if (sv) res.serverIp = sv[1];
+    }
+    res.records.forEach(r => { if (r.type === 'A') res.ipv4.push(r.value); else if (r.type === 'AAAA') res.ipv6.push(r.value); else if (r.type === 'CNAME') res.aliases.push(r.value.replace(/\.$/, '')); });
+    if (res.records[0]) res.name = res.records[0].name;
+  } else {
+    let phase = 'server', mode = null;
+    for (const raw of lines) {
+      const l = raw.trim(); if (!l) continue;
+      let m;
+      if ((m = l.match(/^(?:Servidor|Server):\s*(.*)$/i))) { res.server = m[1].trim(); phase = 'server'; mode = null; continue; }
+      if (/autoritativa|authoritative/i.test(l)) { phase = 'answer'; mode = null; continue; }
+      if ((m = l.match(/^(?:Nome|Name):\s*(.*)$/i))) { phase = 'answer'; if (!res.name) res.name = m[1].trim(); mode = null; continue; }
+      if ((m = l.match(/^(?:Aliases|Apelidos|Aliás):\s*(.*)$/i))) { res.aliases.push(m[1].trim()); mode = 'alias'; continue; }
+      if ((m = l.match(/^(?:Addresses|Address|Endere[cç]os?):\s*(.*)$/i))) {
+        const v = m[1].trim().replace(/#\d+$/, '');
+        if (phase === 'server' && !res.serverIp) { res.serverIp = v; continue; }
+        mode = 'addr'; addAddr(v); continue;
+      }
+      if ((m = l.match(/canonical name = (\S+)/i))) { res.aliases.push(m[1].replace(/\.$/, '')); continue; }
+      if ((m = l.match(/MX preference = (\d+),\s*mail exchanger = (\S+)/i)) || (m = l.match(/mail exchanger = (\d+)\s+(\S+)/i))) { res.mx.push({ pref: Number(m[1]), host: m[2].replace(/\.$/, '') }); phase = 'answer'; if (!res.name) res.name = l.split(/\s+/)[0]; continue; }
+      if (mode === 'addr') addAddr(l); else if (mode === 'alias') res.aliases.push(l);
+    }
+  }
+  function addAddr(v) { if (isIPv4(v)) { if (!res.ipv4.includes(v)) res.ipv4.push(v); } else if (/^[0-9a-f:]+$/i.test(v) && v.includes(':')) { if (!res.ipv6.includes(v)) res.ipv6.push(v); } }
+  res.ok = !!(res.name || res.ipv4.length || res.ipv6.length || res.mx.length || res.notFound);
+  return res;
+}
+
+/* ---------- arp -a / ip neigh ---------- */
+function parseArp(text) {
+  const t = String(text).replace(/\r/g, '');
+  const entries = []; let iface = null;
+  for (const line of t.split('\n')) {
+    let m;
+    if ((m = line.match(/^Interface:\s*([\d.]+)/i))) { iface = m[1]; continue; }
+    if ((m = line.match(/^\s*([\d.]+)\s+([0-9a-f]{2}(?:[-:][0-9a-f]{2}){5})\s+(\S+)/i))) { entries.push({ ip: m[1], mac: m[2].toLowerCase().replace(/-/g, ':'), type: norm(m[3]).startsWith('din') || /dynamic/i.test(m[3]) ? 'dinâmico' : (/est|static/i.test(m[3]) ? 'estático' : m[3]) }); continue; }
+    if ((m = line.match(/^\s*([\d.]+)\s+dev\s+(\S+)\s+lladdr\s+([0-9a-f:]{17})\s*(?:router\s+)?(\S+)?/i))) { entries.push({ ip: m[1], mac: m[3].toLowerCase(), type: m[4] ? m[4].toLowerCase() : '' }); continue; }
+    if ((m = line.match(/\(([\d.]+)\)\s+at\s+([0-9a-f:]{11,17})/i))) {
+      const mac = m[2].split(':').map(x => x.padStart(2, '0')).join(':').toLowerCase();
+      entries.push({ ip: m[1], mac, type: /permanent/.test(line) ? 'estático' : 'dinâmico' }); continue;
+    }
+  }
+  entries.forEach(e => {
+    const first = parseInt(e.mac.slice(0, 2), 16);
+    e.broadcast = e.mac === 'ff:ff:ff:ff:ff:ff';
+    e.multicast = !e.broadcast && (first & 1) === 1;
+    e.localAdmin = !e.broadcast && !e.multicast && (first & 2) === 2;
+  });
+  const macCount = {};
+  entries.filter(e => !e.broadcast && !e.multicast).forEach(e => { macCount[e.mac] = (macCount[e.mac] || 0) + 1; });
+  entries.forEach(e => { e.dupMac = macCount[e.mac] > 1; });
+  return { iface, entries, ok: entries.length > 0 };
+}
+
+/* ---------- netstat / ss ---------- */
+const PORTS = { 20: 'FTP (dados)', 21: 'FTP', 22: 'SSH', 23: 'Telnet', 25: 'SMTP (e-mail)', 53: 'DNS', 67: 'DHCP (servidor)', 68: 'DHCP (cliente)', 80: 'HTTP', 110: 'POP3', 123: 'NTP (hora)', 135: 'RPC do Windows', 137: 'NetBIOS (nomes)', 138: 'NetBIOS (datagramas)', 139: 'NetBIOS (sessão)', 143: 'IMAP', 443: 'HTTPS', 445: 'SMB (compartilhamento)', 465: 'SMTP seguro', 500: 'IPsec / VPN', 587: 'SMTP (envio)', 631: 'Impressão (IPP)', 993: 'IMAP seguro', 995: 'POP3 seguro', 1900: 'SSDP / UPnP', 3306: 'MySQL', 3389: 'RDP (área de trabalho remota)', 5000: 'AirPlay / servidor de testes', 5040: 'Serviço do Windows', 5353: 'mDNS (descoberta na rede)', 5355: 'LLMNR (nomes na rede)', 5432: 'PostgreSQL', 6463: 'Discord (local)', 7680: 'Otimização de Entrega do Windows', 8000: 'Servidor web de teste', 8080: 'Web alternativo / proxy', 27017: 'MongoDB' };
+const RISKY = new Set([21, 23, 135, 139, 445, 1900, 3306, 3389, 5432, 27017]);
+function portName(p) { if (PORTS[p]) return PORTS[p]; if (p >= 49152) return 'Porta dinâmica do sistema'; return 'Desconhecido'; }
+function splitAddr(a) {
+  a = a.replace(/%\w+/, '');
+  let m = a.match(/^\[?(.*?)\]?:(\d+|\*)$/);
+  if (m) return { host: m[1] || '*', port: m[2] === '*' ? null : Number(m[2]) };
+  m = a.match(/^(.*)\.(\d+|\*)$/);
+  if (m) return { host: m[1], port: m[2] === '*' ? null : Number(m[2]) };
+  return { host: a, port: null };
+}
+function parseNetstat(text) {
+  const t = String(text).replace(/\r/g, '');
+  const rows = [];
+  for (const line of t.split('\n')) {
+    const tok = line.trim().split(/\s+/);
+    if (!tok[0]) continue;
+    const proto = tok[0].toLowerCase().replace(/[46]$/, '');
+    if (proto !== 'tcp' && proto !== 'udp') continue;
+    const addrs = tok.filter((x, i) => i > 0 && (/[:.](\d+|\*)$/.test(x)) && /[\d*\]]/.test(x) && !/^\d+$/.test(x));
+    if (addrs.length < 1) continue;
+    const local = splitAddr(addrs[0]); const remote = addrs[1] ? splitAddr(addrs[1]) : { host: '*', port: null };
+    const st = tok.find(x => /^(LISTEN|LISTENING|ESCUTANDO|ESTAB|ESTABLISHED|ESTABELECIDA|TIME_WAIT|CLOSE_WAIT|SYN_SENT|FIN_WAIT_\d|UNCONN|AGUARDANDO_FECHAMENTO|FECHAR_ESPERA)$/i.test(x)) || '';
+    let state = 'outro';
+    if (/LISTEN|ESCUTANDO/i.test(st)) state = 'escutando';
+    else if (/ESTAB/i.test(st)) state = 'estabelecida';
+    else if (proto === 'udp' && (!st || /UNCONN/i.test(st))) state = 'udp';
+    else if (st) state = st.toLowerCase();
+    const pid = /^\d+$/.test(tok[tok.length - 1]) && tok.length >= 4 ? Number(tok[tok.length - 1]) : null;
+    rows.push({ proto, local, remote, state, pid });
+  }
+  const listen = rows.filter(r => (r.state === 'escutando' || r.state === 'udp') && r.local.port !== null);
+  const seen = new Map();
+  listen.forEach(r => {
+    const scope = /^(127\.|::1$|localhost)/.test(r.local.host) ? 'local' : (/^(0\.0\.0\.0|::|\*|\[::\])$/.test(r.local.host) ? 'todas' : 'interface');
+    const k = r.proto + r.local.port;
+    const prev = seen.get(k);
+    const rank = { local: 0, interface: 1, todas: 2 };
+    if (!prev || rank[scope] > rank[prev.scope]) seen.set(k, { proto: r.proto, port: r.local.port, host: r.local.host, scope, name: portName(r.local.port), risky: RISKY.has(r.local.port) });
+  });
+  const services = [...seen.values()].sort((a, b) => a.port - b.port);
+  const est = rows.filter(r => r.state === 'estabelecida');
+  const remotePorts = {}; est.forEach(r => { if (r.remote.port !== null) remotePorts[r.remote.port] = (remotePorts[r.remote.port] || 0) + 1; });
+  return { rows, services, established: est, remotePorts, ok: rows.length > 0 };
+}
+
+
+/* ---------- teste de porta: Test-NetConnection / nc ---------- */
+function parsePort(text) {
+  const t = String(text).replace(/\r/g, '');
+  const r = { tool: null, host: null, ip: null, port: null, tcpOk: null, refused: false, timeout: false, pingOk: null, pingRtt: null, source: null, dnsFail: false };
+  let m;
+  if (/TcpTestSucceeded|ComputerName\s*:/i.test(t)) {
+    r.tool = 'Test-NetConnection';
+    if ((m = t.match(/ComputerName\s*:\s*(\S+)/i))) r.host = m[1];
+    if ((m = t.match(/RemoteAddress\s*:\s*(\S+)/i))) r.ip = m[1];
+    if ((m = t.match(/RemotePort\s*:\s*(\d+)/i))) r.port = Number(m[1]);
+    if ((m = t.match(/SourceAddress\s*:\s*(\S+)/i))) r.source = m[1];
+    if ((m = t.match(/TcpTestSucceeded\s*:\s*(True|False)/i))) r.tcpOk = /true/i.test(m[1]);
+    if ((m = t.match(/PingSucceeded\s*:\s*(True|False)/i))) r.pingOk = /true/i.test(m[1]);
+    if ((m = t.match(/PingReplyDetails\s*\(RTT\)\s*:\s*(\d+)\s*ms/i))) r.pingRtt = Number(m[1]);
+    if (/name resolution|resolu[cç][aã]o de nome|n[aã]o foi poss[ií]vel resolver/i.test(t)) r.dnsFail = true;
+    if (r.tcpOk === false) { r.refused = /refused|recusad/i.test(t); r.timeout = !r.refused; }
+  } else if ((m = t.match(/Connection to (\S+)(?:\s+\(([\d.]+)\))?\s+(?:port\s+)?(\d+)/i))) {
+    r.tool = 'nc'; r.host = m[1]; r.ip = m[2] || null; r.port = Number(m[3]);
+    r.tcpOk = /succeeded|open/i.test(t);
+  } else if ((m = t.match(/connectx? to (\S+)(?:\s+\(([\d.]+)\))?\s+port\s+(\d+).*failed:\s*(.+)/i))) {
+    r.tool = 'nc'; r.host = m[1]; r.ip = m[2] || null; r.port = Number(m[3]); r.tcpOk = false;
+    r.refused = /refused|recusad/i.test(m[4]); r.timeout = /timed out|tempo|esgotad/i.test(m[4]);
+  } else if (/getaddrinfo|could not resolve|name or service not known|nodename nor servname/i.test(t)) {
+    r.tool = 'nc'; r.dnsFail = true; r.tcpOk = false;
+  }
+  r.ok = r.tool !== null && (r.tcpOk !== null || r.dnsFail);
+  return r;
+}
+
+/* ---------- cronômetro de requisição: curl -w ---------- */
+function parseCurlTiming(text) {
+  const runs = [];
+  for (const line of String(text).replace(/\r/g, '').split('\n')) {
+    if (!/dns\s*=/.test(line)) continue;
+    const v = {}; let m; const re = /(dns|tcp|tls|ttfb|total|codigo)\s*=\s*([\d.,]+)/g;
+    while ((m = re.exec(line))) v[m[1]] = parseFloat(m[2].replace(',', '.'));
+    if (v.total === undefined || v.dns === undefined) continue;
+    const ms = x => (x || 0) * 1000;
+    const tcpEnd = ms(v.tcp), tlsEnd = v.tls ? ms(v.tls) : tcpEnd;
+    const run = {
+      code: v.codigo || null, https: !!v.tls,
+      dns: ms(v.dns), tcp: Math.max(0, tcpEnd - ms(v.dns)), tls: v.tls ? Math.max(0, tlsEnd - tcpEnd) : 0,
+      server: Math.max(0, ms(v.ttfb) - tlsEnd), download: Math.max(0, ms(v.total) - ms(v.ttfb)), total: ms(v.total), ttfb: ms(v.ttfb),
+    };
+    run.rtt = run.tcp;
+    runs.push(run);
+  }
+  return { runs, ok: runs.length > 0 };
+}
+function latTone(v) { return v <= 60 ? 'good' : v <= 150 ? 'warn' : 'bad'; }
+
+/* ---------- avaliações ---------- */
+function rateUse(p) {
+  const out = [];
+  if (p.avg === undefined) return out;
+  const L = p.avg, J = p.jitter || 0, P = p.lossPct || 0;
+  out.push(['Jogos online', L <= 50 && P <= 1 && J <= 15 ? ['good', 'Ótimo'] : (L <= 100 && P <= 2 ? ['warn', 'Jogável'] : ['bad', 'Ruim'])]);
+  out.push(['Chamada de vídeo', L <= 150 && J <= 30 && P <= 1 ? ['good', 'Bom'] : (L <= 250 && P <= 3 ? ['warn', 'Com atrasos'] : ['bad', 'Ruim'])]);
+  out.push(['Navegar e vídeos', P <= 2 ? ['good', 'Sem problemas'] : (P <= 5 ? ['warn', 'Pode travar'] : ['bad', 'Ruim'])]);
+  return out;
+}
+function rateLatency(avg) { if (avg <= 30) return ['good', 'Excelente']; if (avg <= 60) return ['good', 'Boa']; if (avg <= 100) return ['warn', 'Razoável']; if (avg <= 150) return ['warn', 'Alta']; return ['bad', 'Muito alta']; }
+
+if (typeof module !== 'undefined') module.exports = { parsePort, parseCurlTiming, latTone, isIPv4, ipToInt, intToIp, maskFromPrefix, prefixFromMask, classifyIp, subnetInfo, sameNetwork, parseIpconfig, parsePing, parseTrace, parseDns, parseArp, parseNetstat, rateUse, rateLatency, splitAddr };
+
+/* ===== Saídas de exemplo (marcadas como exemplo na página) ===== */
+const EX = {
+  ipconfig: {
+    windows: `Configuração de IP do Windows
+
+   Nome do host. . . . . . . . . . . . . . . . : LAB-PC07
+   Sufixo DNS primário . . . . . . . . . . . . :
+   Tipo de nó. . . . . . . . . . . . . . . . . : híbrido
+
+Adaptador Ethernet Ethernet:
+
+   Sufixo DNS específico de conexão. . . . . . :
+   Descrição . . . . . . . . . . . . . . . . . : Realtek PCIe GbE Family Controller
+   Endereço Físico . . . . . . . . . . . . . . : 3C-52-82-1A-7F-09
+   DHCP Habilitado . . . . . . . . . . . . . . : Sim
+   Configuração Automática Habilitada. . . . . : Sim
+   Endereço IPv6 de link local . . . . . . . . : fe80::8d4c:2a1f:93b7:5e21%12(Preferencial)
+   Endereço IPv4. . . . . . . . . . . . . . . : 192.168.0.15(Preferencial)
+   Máscara de Sub-rede . . . . . . . . . . . . : 255.255.255.0
+   Concessão Obtida. . . . . . . . . . . . . . : quinta-feira, 5 de novembro de 2026 08:02:11
+   Concessão Expira. . . . . . . . . . . . . . : sexta-feira, 6 de novembro de 2026 08:02:11
+   Gateway Padrão. . . . . . . . . . . . . . . : fe80::1%12
+                                                 192.168.0.1
+   Servidor DHCP . . . . . . . . . . . . . . . : 192.168.0.1
+   Servidores DNS. . . . . . . . . . . . . . . : 192.168.0.1
+                                                 8.8.8.8
+   NetBIOS em Tcpip. . . . . . . . . . . . . . : Habilitado
+
+Adaptador Ethernet VirtualBox Host-Only Network:
+
+   Sufixo DNS específico de conexão. . . . . . :
+   Descrição . . . . . . . . . . . . . . . . . : VirtualBox Host-Only Ethernet Adapter
+   Endereço Físico . . . . . . . . . . . . . . : 0A-00-27-00-00-0D
+   DHCP Habilitado . . . . . . . . . . . . . . : Não
+   Endereço IPv4. . . . . . . . . . . . . . . : 192.168.56.1(Preferencial)
+   Máscara de Sub-rede . . . . . . . . . . . . : 255.255.255.0
+   Gateway Padrão. . . . . . . . . . . . . . . :
+
+Adaptador de Rede sem Fio Wi-Fi:
+
+   Estado da mídia. . . . . . . . . . . . . . . : mídia desconectada
+   Descrição . . . . . . . . . . . . . . . . . : Intel(R) Wi-Fi 6 AX201 160MHz
+   Endereço Físico . . . . . . . . . . . . . . : 70-1A-B8-44-90-C2`,
+    linux: `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: enp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 3c:52:82:1a:7f:09 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.0.15/24 brd 192.168.0.255 scope global dynamic noprefixroute enp3s0
+       valid_lft 85934sec preferred_lft 85934sec
+    inet6 fe80::8d4c:2a1f:93b7:5e21/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+default via 192.168.0.1 dev enp3s0 proto dhcp src 192.168.0.15 metric 100
+192.168.0.0/24 dev enp3s0 proto kernel scope link src 192.168.0.15 metric 100`,
+    macos: `en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+	options=6460<TSO4,TSO6,CHANNEL_IO,PARTIAL_CSUM,ZEROINVERT_CSUM>
+	ether 70:1a:b8:44:90:c2
+	inet6 fe80::1c4f:3a2b:9d11:7e20%en0 prefixlen 64 secured scopeid 0xb
+	inet 192.168.0.15 netmask 0xffffff00 broadcast 192.168.0.255
+	status: active
+   route to: default
+destination: default
+       mask: default
+    gateway: 192.168.0.1
+  interface: en0`,
+  },
+  ping: {
+    windows: `Disparando 8.8.8.8 com 32 bytes de dados:
+Resposta de 8.8.8.8: bytes=32 tempo=14ms TTL=117
+Resposta de 8.8.8.8: bytes=32 tempo=13ms TTL=117
+Resposta de 8.8.8.8: bytes=32 tempo=21ms TTL=117
+Resposta de 8.8.8.8: bytes=32 tempo=14ms TTL=117
+
+Estatísticas do Ping para 8.8.8.8:
+    Pacotes: Enviados = 4, Recebidos = 4, Perdidos = 0 (0% de
+             perda),
+Aproximar um número redondo de vezes em milissegundos:
+    Mínimo = 13ms, Máximo = 21ms, Média = 15ms`,
+    linux: `PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=14.2 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=13.8 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=117 time=21.4 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=117 time=14.1 ms
+
+--- 8.8.8.8 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 13.812/15.875/21.412/3.168 ms`,
+  },
+  trace: {
+    windows: `Rastreando a rota para hnd-jp-ping.vultr.com [108.61.201.151]
+com no máximo 30 saltos:
+
+  1    <1 ms    <1 ms    <1 ms  192.168.0.1
+  2     4 ms     3 ms     4 ms  100.64.0.1
+  3     *        *        *     Esgotado o tempo limite do pedido.
+  4     9 ms     8 ms     9 ms  198.51.100.1
+  5    12 ms    11 ms    12 ms  198.51.100.17
+  6   118 ms   117 ms   119 ms  198.51.100.94
+  7   121 ms   120 ms   122 ms  198.51.100.130
+  8   262 ms   261 ms   263 ms  203.0.113.1
+  9   264 ms   263 ms   265 ms  108.61.201.151
+
+Rastreamento concluído.`,
+    linux: `traceroute to hnd-jp-ping.vultr.com (108.61.201.151), 30 hops max, 60 byte packets
+ 1  192.168.0.1  0.512 ms  0.456 ms  0.430 ms
+ 2  100.64.0.1  4.102 ms  3.877 ms  4.011 ms
+ 3  * * *
+ 4  198.51.100.1  9.210 ms  8.874 ms  9.032 ms
+ 5  198.51.100.17  12.118 ms  11.902 ms  12.240 ms
+ 6  198.51.100.94  118.442 ms  117.903 ms  119.020 ms
+ 7  198.51.100.130  121.330 ms  120.871 ms  122.004 ms
+ 8  203.0.113.1  262.118 ms  261.540 ms  263.007 ms
+ 9  108.61.201.151  264.390 ms  263.811 ms  265.120 ms`,
+  },
+  dns: {
+    windows: `Servidor:  UnKnown
+Address:  192.168.0.1
+
+Não é resposta autoritativa:
+Nome:    google.com
+Addresses:  2800:3f0:4001:83b::200e
+          142.250.218.14`,
+    linux: `Server:		127.0.0.53
+Address:	127.0.0.53#53
+
+Non-authoritative answer:
+Name:	google.com
+Address: 142.250.218.14
+Name:	google.com
+Address: 2800:3f0:4001:83b::200e`,
+  },
+  arp: {
+    windows: `Interface: 192.168.0.15 --- 0xc
+  Endereço IP           Endereço físico       Tipo
+  192.168.0.1           a4-2b-b0-12-34-56     dinâmico
+  192.168.0.22          3c-52-82-1a-80-11     dinâmico
+  192.168.0.31          da-7f-21-6c-05-9e     dinâmico
+  192.168.0.255         ff-ff-ff-ff-ff-ff     estático
+  224.0.0.22            01-00-5e-00-00-16     estático
+  224.0.0.251           01-00-5e-00-00-fb     estático
+  239.255.255.250       01-00-5e-7f-ff-fa     estático
+  255.255.255.255       ff-ff-ff-ff-ff-ff     estático`,
+    linux: `192.168.0.1 dev enp3s0 lladdr a4:2b:b0:12:34:56 REACHABLE
+192.168.0.22 dev enp3s0 lladdr 3c:52:82:1a:80:11 STALE
+192.168.0.31 dev enp3s0 lladdr da:7f:21:6c:05:9e STALE`,
+    macos: `? (192.168.0.1) at a4:2b:b0:12:34:56 on en0 ifscope [ethernet]
+? (192.168.0.22) at 3c:52:82:1a:80:11 on en0 ifscope [ethernet]
+? (192.168.0.31) at da:7f:21:6c:5:9e on en0 ifscope [ethernet]
+? (192.168.0.255) at ff:ff:ff:ff:ff:ff on en0 ifscope [ethernet]`,
+  },
+  netstat: {
+    windows: `Conexões ativas
+
+  Proto  Endereço local         Endereço externo       Estado          PID
+  TCP    0.0.0.0:135            0.0.0.0:0              ESCUTANDO       1104
+  TCP    0.0.0.0:445            0.0.0.0:0              ESCUTANDO       4
+  TCP    0.0.0.0:3389           0.0.0.0:0              ESCUTANDO       1288
+  TCP    0.0.0.0:5040           0.0.0.0:0              ESCUTANDO       6620
+  TCP    0.0.0.0:49664          0.0.0.0:0              ESCUTANDO       812
+  TCP    127.0.0.1:6463         0.0.0.0:0              ESCUTANDO       9812
+  TCP    192.168.0.15:139       0.0.0.0:0              ESCUTANDO       4
+  TCP    192.168.0.15:52341     142.250.218.14:443     ESTABELECIDA    7344
+  TCP    192.168.0.15:52388     198.51.100.23:443      ESTABELECIDA    4410
+  TCP    192.168.0.15:52395     198.51.100.40:443      ESTABELECIDA    7344
+  TCP    192.168.0.15:52402     203.0.113.80:443       TIME_WAIT       0
+  TCP    192.168.0.15:52410     192.168.0.22:445       ESTABELECIDA    4
+  TCP    [::]:135               [::]:0                 ESCUTANDO       1104
+  UDP    0.0.0.0:5353           *:*                                    2210
+  UDP    0.0.0.0:5355           *:*                                    2210
+  UDP    192.168.0.15:1900      *:*                                    5120`,
+    linux: `Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*
+udp   UNCONN 0      0            0.0.0.0:5353       0.0.0.0:*
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*
+tcp   LISTEN 0      151        127.0.0.1:3306       0.0.0.0:*
+tcp   LISTEN 0      511                *:80               *:*`,
+    macos: `tcp4       0      0  *.22                   *.*                    LISTEN
+tcp4       0      0  127.0.0.1.631          *.*                    LISTEN
+tcp6       0      0  *.5000                 *.*                    LISTEN
+tcp4       0      0  *.5000                 *.*                    LISTEN`,
+  },
+  port: {
+    windows: `ComputerName     : www.u-tokyo.ac.jp
+RemoteAddress    : 210.152.243.234
+RemotePort       : 443
+InterfaceAlias   : Ethernet
+SourceAddress    : 192.168.0.15
+TcpTestSucceeded : True`,
+    linux: `Connection to www.u-tokyo.ac.jp (210.152.243.234) 443 port [tcp/https] succeeded!`,
+    macos: `Connection to www.u-tokyo.ac.jp port 443 [tcp/https] succeeded!`,
+  },
+  curl: {
+    windows: `dns=0.045123 tcp=0.312004 tls=0.598871 ttfb=0.903452 total=1.120334 codigo=200
+dns=0.000912 tcp=0.268551 tls=0.553120 ttfb=0.851004 total=1.061287 codigo=200`,
+  },
+};
+if (typeof module !== 'undefined') module.exports = EX;
+
+/* ===== Interface ===== */
+(function () {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = (v, d = 1) => v == null || isNaN(v) ? '—' : (v < 1 && v > 0 ? '<1' : (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toLocaleString('pt-BR'));
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('redeslab:' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('redeslab:' + k, JSON.stringify(v)); } catch (e) { } },
+  };
+  const tag = (tone, t) => `<span class="tag ${tone}">${esc(t)}</span>`;
+  const note = (tone, html) => `<div class="note ${tone}"><div>${html}</div></div>`;
+  const toneOf = key => ({ private: 'info', public: 'good', cgnat: 'warn', apipa: 'bad', loopback: 'neutral', doc: 'neutral', multicast: 'neutral', broadcast: 'neutral', reserved: 'neutral', invalid: 'bad' }[key] || 'neutral');
+  const ipTag = ip => { const c = classifyIp(ip); return tag(toneOf(c.key), c.label); };
+  const RESOLVERS = { '8.8.8.8': 'Google Public DNS', '8.8.4.4': 'Google Public DNS', '1.1.1.1': 'Cloudflare', '1.0.0.1': 'Cloudflare', '9.9.9.9': 'Quad9', '208.67.222.222': 'OpenDNS', '208.67.220.220': 'OpenDNS', '127.0.0.53': 'resolvedor local do Linux (systemd-resolved)' };
+
+  const MISSIONS = ['m1', 'm2', 'm3', 'm12', 'm4', 'm13', 'm5', 'm6', 'm7', 'm14', 'm8', 'm9', 'm10', 'm11'];
+  const NUM = id => String(MISSIONS.indexOf(id) + 1).padStart(2, '0');
+  const state = {
+    os: store.get('os', /Mac/i.test(navigator.platform || '') ? 'macos' : (/Linux/i.test(navigator.platform || '') && !/Android/i.test(navigator.userAgent) ? 'linux' : 'windows')),
+    done: new Set(store.get('done', [])),
+    local: store.get('local', null),
+    publicIp: store.get('publicIp', null),
+    pings: store.get('pings', []), speeds: store.get('speeds', []),
+    portTarget: 'www.u-tokyo.ac.jp', port: '443', curlTarget: 'https://www.u-tokyo.ac.jp',
+    pingTarget: null, traceTarget: '8.8.8.8', dnsTarget: 'google.com',
+  };
+
+  const CMDS = {
+    ipconfig: { windows: 'ipconfig /all', linux: 'ip a && ip route', macos: 'ifconfig en0 && route -n get default' },
+    ping: { windows: 'ping {t}', linux: 'ping -c 4 {t}', macos: 'ping -c 4 {t}' },
+    trace: { windows: 'tracert -d {t}', linux: 'traceroute -n {t}', macos: 'traceroute -n {t}' },
+    dns: { windows: 'nslookup {t}', linux: 'nslookup {t}', macos: 'nslookup {t}' },
+    arp: { windows: 'arp -a', linux: 'ip neigh', macos: 'arp -a' },
+    netstat: { windows: 'netstat -ano', linux: 'ss -tulpn', macos: 'netstat -an | grep LISTEN' },
+    port: { windows: 'Test-NetConnection {t} -Port {p}', linux: 'nc -zv {t} {p}', macos: 'nc -zv {t} {p}' },
+    curl: { windows: 'curl.exe -o NUL -s -w "dns=%{time_namelookup} tcp=%{time_connect} tls=%{time_appconnect} ttfb=%{time_starttransfer} total=%{time_total} codigo=%{http_code}\\n" {t}', linux: 'curl -o /dev/null -s -w "dns=%{time_namelookup} tcp=%{time_connect} tls=%{time_appconnect} ttfb=%{time_starttransfer} total=%{time_total} codigo=%{http_code}\\n" {t}', macos: 'curl -o /dev/null -s -w "dns=%{time_namelookup} tcp=%{time_connect} tls=%{time_appconnect} ttfb=%{time_starttransfer} total=%{time_total} codigo=%{http_code}\\n" {t}' },
+    server: { windows: 'python -m http.server 8000', linux: 'python3 -m http.server 8000', macos: 'python3 -m http.server 8000' },
+  };
+  const HINTS = {
+    windows: 'Tecla Windows, digite cmd e aperte Enter. Para copiar o resultado: selecione com o mouse e aperte Ctrl+C.',
+    linux: 'Abra o Terminal com Ctrl+Alt+T. Para copiar: selecione e aperte Ctrl+Shift+C.',
+    macos: 'Cmd+Espaço, digite Terminal e aperte Enter. Para copiar: selecione e aperte Cmd+C.',
+  };
+  const exOs = (kind) => EX[kind][state.os] || EX[kind].linux || EX[kind].windows;
+
+  /* ---------- progresso e sumário ---------- */
+  function renderToc() {
+    $('#toc').innerHTML = MISSIONS.map(id => {
+      const sec = document.getElementById(id);
+      const mn = sec.querySelector('.mnum'); if (mn) mn.textContent = NUM(id);
+      return `<li class="${state.done.has(id) ? 'done' : ''}"><a href="#${id}"><span class="n">${NUM(id)}</span><span>${esc(sec.dataset.title)}</span><span class="ok" aria-label="${state.done.has(id) ? 'concluída' : 'pendente'}"></span></a></li>`;
+    }).join('') + `<li><a href="#sites"><span class="n">+</span><span>Sites úteis</span><span></span></a></li>`;
+    const n = MISSIONS.filter(id => state.done.has(id)).length;
+    $('#prog-bar').style.width = (n / MISSIONS.length * 100) + '%';
+    $('#prog-text').textContent = `${n} de ${MISSIONS.length} missões concluídas`;
+    MISSIONS.forEach(id => { const st = $(`#${id} .status`); if (st) { st.textContent = state.done.has(id) ? 'Concluída' : 'A fazer'; st.classList.toggle('done', state.done.has(id)); } });
+  }
+  function markDone(id) { if (!state.done.has(id)) { state.done.add(id); store.set('done', [...state.done]); renderToc(); } }
+
+  /* ---------- comandos ---------- */
+  function cmdText(kind, target) { return CMDS[kind][state.os].replace('{t}', target || '').replace('{p}', state.port); }
+  function renderCmds() {
+    $$('.cmd[data-cmd]').forEach(el => {
+      const kind = el.dataset.cmd;
+      let t = '';
+      if (el.id === 'cmd-ping') t = state.pingTarget;
+      else if (el.id === 'cmd-trace') t = state.traceTarget;
+      else if (el.id === 'cmd-dns') t = state.dnsTarget;
+      else if (el.id === 'cmd-port') t = state.portTarget;
+      else if (el.id === 'cmd-curl') t = state.curlTarget;
+      else if (el.id === 'cmd-pair') t = ($('#pair-ip').value.trim() || 'IP_DO_COLEGA');
+      const text = cmdText(kind, t);
+      el.innerHTML = `<code>${esc(text)}</code><button class="btn small" type="button">Copiar</button>`;
+      el.querySelector('button').onclick = (ev) => copyText(text, ev.currentTarget, el.querySelector('code'));
+    });
+    $$('[data-hint="terminal"]').forEach(p => p.textContent = HINTS[state.os]);
+    $('#port-hint').textContent = state.os === 'windows' ? 'Este comando é do PowerShell: tecla Windows, digite powershell e aperte Enter. Leva alguns segundos.' : 'O nc já vem no macOS e na maioria das distribuições Linux. Se faltar: sudo apt install netcat-openbsd.';
+    $('#curl-hint').textContent = state.os === 'windows' ? 'No Windows 10 e 11 o curl já vem instalado. Escreva curl.exe: no PowerShell, só “curl” chama outro comando. Rode duas vezes e cole as duas linhas: na segunda, o DNS vem do cache.' : 'Rode duas vezes e cole as duas linhas: na segunda, o DNS vem do cache.';
+  }
+  function copyText(text, btn, codeEl) {
+    const ok = () => { btn.textContent = 'Copiado'; setTimeout(() => btn.textContent = 'Copiar', 1400); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents(codeEl); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selecionado: Ctrl+C'; setTimeout(() => btn.textContent = 'Copiar', 2200); };
+    try { navigator.clipboard.writeText(text).then(ok, fallback); } catch (e) { fallback(); }
+  }
+  function chips(container, items, current, onPick) {
+    const el = $(container);
+    el.innerHTML = items.map(([v, label]) => `<button type="button" class="chip" data-v="${esc(v)}" aria-pressed="${v === current}">${esc(label)}</button>`).join('');
+    $$('.chip', el).forEach(b => b.onclick = () => { onPick(b.dataset.v); $$('.chip', el).forEach(x => x.setAttribute('aria-pressed', x === b)); renderCmds(); });
+  }
+  function setOs(os) {
+    state.os = os; store.set('os', os);
+    $$('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.os === os));
+    renderCmds();
+    // reanalisa exemplos que estão à mostra
+    ['m1', 'm3', 'm5', 'm6', 'm9b', 'm10', 'm12', 'm14'].forEach(id => { const out = outEl(id); if (out && out.dataset.example === '1') runExample(id); });
+  }
+
+  /* ---------- helpers de saída ---------- */
+  const outEl = id => document.getElementById('out-' + id);
+  function head(title, isEx) { return `<div class="result-head"><h3>${esc(title)}</h3>${isEx ? tag('example', 'Exemplo') : tag('good', 'Seus dados')}</div>`; }
+  function setOut(id, html, isEx) { const o = outEl(id); o.innerHTML = html; o.dataset.example = isEx ? '1' : '0'; }
+  function errorOut(id, msg) { const o = outEl(id); o.innerHTML = note('bad', msg); o.dataset.example = '0'; }
+
+  /* ---------- M1: IP local ---------- */
+  function m1(text, isEx) {
+    const r = parseIpconfig(text);
+    const a = r.primary;
+    if (!a) return errorOut('m1', 'Não encontrei nenhum endereço IPv4. Confira se você colou a saída completa do comando e se o computador está conectado.');
+    const c = classifyIp(a.ipv4);
+    const prefix = a.prefix != null ? a.prefix : 24;
+    const sn = subnetInfo(a.ipv4, prefix);
+    const gw = a.gateway[0] || null;
+    const macPriv = a.mac && (parseInt(a.mac.slice(0, 2), 16) & 2) === 2;
+    let html = head(a.name, isEx);
+    html += `<dl class="kv">
+      <dt>Endereço IPv4</dt><dd>${esc(a.ipv4)} ${ipTag(a.ipv4)}</dd>
+      <dt>Máscara</dt><dd>${esc(a.mask || '—')} <span class="tag neutral">/${prefix}</span></dd>
+      <dt>Gateway padrão</dt><dd>${gw ? esc(gw) : '—'}</dd>
+      <dt>Servidores DNS</dt><dd>${a.dns.length ? a.dns.map(d => esc(d) + (RESOLVERS[d] ? ' ' + tag('neutral', RESOLVERS[d]) : '')).join('<br>') : '—'}</dd>
+      <dt>Endereço MAC</dt><dd>${esc(a.mac || '—')}${macPriv ? ' ' + tag('info', 'MAC aleatório') : ''}</dd>
+      ${a.dhcp !== null ? `<dt>Como recebeu o IP</dt><dd>${a.dhcp ? 'Automático (DHCP)' : 'Configurado à mão'}</dd>` : ''}
+      ${r.hostname ? `<dt>Nome do computador</dt><dd>${esc(r.hostname)}</dd>` : ''}
+    </dl>`;
+    html += `<div class="tiles">
+      <div class="tile"><span class="k">Rede</span><span class="v">${esc(sn.network)}</span></div>
+      <div class="tile"><span class="k">Broadcast</span><span class="v">${esc(sn.broadcast)}</span></div>
+      <div class="tile"><span class="k">Faixa de máquinas</span><span class="v" style="font-size:16px">${esc(sn.first)} a ${esc(sn.last)}</span></div>
+      <div class="tile"><span class="k">Endereços para máquinas</span><span class="v">${sn.hosts.toLocaleString('pt-BR')}</span></div>
+    </div>`;
+    const ns = [];
+    ns.push(note(toneOf(c.key) === 'bad' ? 'bad' : 'info', `<b>${esc(c.label)}:</b> ${esc(c.desc)}`));
+    if (c.key === 'apipa') ns.push(note('bad', 'Confira o cabo ou o Wi-Fi e rode <code>ipconfig /renew</code> (Windows) para pedir um novo IP ao roteador.'));
+    if (!gw) ns.push(note('warn', 'Sem gateway: este computador só conversa com a rede local, não com a internet.'));
+    else ns.push(note('info', `Tudo o que vai para fora da rede ${esc(sn.network)}/${prefix} passa pelo roteador ${esc(gw)}.`));
+    if (gw && a.dns.includes(gw)) ns.push(note('info', 'O roteador também responde como DNS: ele recebe as perguntas e repassa ao provedor.'));
+    if (!a.dns.length && r.format !== 'windows') ns.push(note('info', state.os === 'macos' ? 'Para ver o DNS no macOS: <code>scutil --dns | grep nameserver</code>.' : 'Para ver o DNS no Linux: <code>resolvectl status</code>.'));
+    if (macPriv) ns.push(note('info', 'Este MAC tem o bit de “endereço local” ligado: o sistema usa um MAC aleatório por privacidade, comum no Wi-Fi de celulares e notebooks.'));
+    const others = r.adapters.filter(x => x !== a);
+    if (others.length) ns.push(note('info', 'Outras interfaces: ' + others.map(x => `<b>${esc(x.name.replace(/^Adaptador (de Rede sem Fio |Ethernet )?/i, ''))}</b> (${x.disconnected ? 'desconectada' : x.loopback ? 'loopback' : x.ipv4 ? esc(x.ipv4) + (x.virtual ? ', virtual' : '') : 'sem IPv4'})`).join(', ') + '. Interfaces virtuais (VirtualBox, VMware, Hyper-V, Docker) criam redes internas no próprio computador.'));
+    html += `<div class="notes">${ns.join('')}</div>`;
+    setOut('m1', html, isEx);
+    if (!isEx) {
+      state.local = { ip: a.ipv4, prefix, gateway: gw, dns: a.dns, mac: a.mac };
+      store.set('local', state.local); markDone('m1'); onLocalChange();
+    }
+  }
+  function onLocalChange() {
+    renderPingTargets(); renderPairInfo(); drawSim(); renderM2();
+  }
+
+  /* ---------- M2: IP global ---------- */
+  function renderM2(isEx) {
+    const pub = state.publicIp || '203.0.113.45';
+    const ex = !state.publicIp;
+    const loc = state.local ? state.local.ip : '192.168.0.15';
+    const c = classifyIp(pub);
+    let html = head('Local × global', ex);
+    html += `<div class="flow">
+      <div class="node"><b>Seu PC</b><span>${esc(loc)}</span></div><span class="arrow">→</span>
+      <div class="node dark"><b>Roteador (NAT)</b><span>troca o endereço</span></div><span class="arrow">→</span>
+      <div class="node"><b>Internet vê</b><span>${esc(pub)}</span></div></div>`;
+    const ns = [];
+    if (c.key === 'invalid') ns.push(note('bad', 'Isso não parece um endereço IPv4. Digite só os números, como 177.10.20.30. Se o site mostrou algo com “:”, é um IPv6: anote também, mas use o IPv4 aqui.'));
+    else if (c.key === 'private' || c.key === 'apipa' || c.key === 'loopback') ns.push(note('warn', `${esc(pub)} é um IP ${esc(c.label.toLowerCase())}, não público. Provavelmente é o IP do seu computador ou do roteador. O site mostra o endereço que chega até ele.`));
+    else if (c.key === 'cgnat') ns.push(note('warn', 'Esse endereço é da faixa do CGNAT. Ele aparece na página do roteador, mas os sites veem outro: o IP público do provedor.'));
+    else {
+      ns.push(note(ex ? 'info' : 'good', `<b>${esc(c.label)}:</b> ${esc(c.desc)}`));
+      ns.push(note('info', 'Todos os computadores do laboratório devem ver este mesmo IP: vocês saem para a internet pelo mesmo roteador. Compare com os colegas.'));
+      ns.push(note('info', 'Quer saber se o provedor usa CGNAT? Na página do roteador, veja o “IP WAN”. Se ele começar com 100.64 a 100.127 ou for diferente deste, há CGNAT.'));
+      ns.push(note('info', 'O ipinfo.io mostra também o provedor (ASN) e a cidade aproximada. A localização por IP é aproximada: costuma apontar a cidade do provedor, não a sua casa.'));
+    }
+    html += `<div class="notes">${ns.join('')}</div>`;
+    setOut('m2', html, ex);
+  }
+
+  /* ---------- M3: ping ---------- */
+  function pingTargets() {
+    const gw = state.local && state.local.gateway ? state.local.gateway : '192.168.0.1';
+    return [[gw, `${gw} · roteador`], ['8.8.8.8', '8.8.8.8 · Google DNS'], ['google.com', 'google.com'], ['registro.br', 'registro.br · Brasil'], ['hnd-jp-ping.vultr.com', 'hnd-jp-ping.vultr.com · Tóquio']];
+  }
+  function renderPingTargets() {
+    const items = pingTargets();
+    if (!state.pingTarget || !items.some(i => i[0] === state.pingTarget)) state.pingTarget = items[1][0];
+    chips('#ping-targets', items, state.pingTarget, v => state.pingTarget = v);
+    renderCmds();
+  }
+  function pingChart(p) {
+    const W = 600, H = 170, padL = 34, padB = 22, padT = 18;
+    const n = p.replies.length; if (!n) return '';
+    const vals = p.replies.map(r => r.time).filter(v => v !== null);
+    const maxV = Math.max(5, ...vals) * 1.15;
+    const step = (W - padL - 8) / n, bw = Math.min(46, step * 0.62);
+    const y = v => H - padB - (v / maxV) * (H - padB - padT);
+    let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tempo de cada resposta do ping em milissegundos">`;
+    [0, 0.5, 1].forEach(f => { const v = maxV / 1.15 * f; const yy = y(v); s += `<line class="axis" x1="${padL}" x2="${W - 4}" y1="${yy}" y2="${yy}"/><text class="lbl" x="${padL - 6}" y="${yy + 4}" text-anchor="end">${fmt(v, 0)}</text>`; });
+    p.replies.forEach((r, i) => {
+      const cx = padL + step * i + step / 2;
+      if (r.time === null) s += `<text class="lost" x="${cx}" y="${H - padB - 6}" text-anchor="middle">×</text><text class="lbl" x="${cx}" y="${H - 6}" text-anchor="middle">perdido</text>`;
+      else {
+        s += `<rect class="bar ${latTone(r.time)}" x="${cx - bw / 2}" y="${y(r.time)}" width="${bw}" height="${Math.max(1, H - padB - y(r.time))}" rx="3"/>`;
+        if (n <= 24) s += `<text class="val" x="${cx}" y="${y(r.time) - 5}" text-anchor="middle">${fmt(r.time)}</text>`;
+        if (n <= 12) s += `<text class="lbl" x="${cx}" y="${H - 6}" text-anchor="middle">#${i + 1}</text>`;
+      }
+    });
+    return s + '</svg>';
+  }
+  function pingAnalysis(p, opts = {}) {
+    let html = '';
+    if (p.dnsFail) return note('bad', `O nome <b>${esc(p.target || '')}</b> não foi encontrado. O problema está no DNS ou o nome foi digitado errado. Teste <code>ping 8.8.8.8</code>: se funcionar, a internet está ok e só o DNS falhou.`);
+    if (p.generalFail) return note('bad', 'Falha geral: o computador não tem rota para a rede. Confira o cabo/Wi-Fi e se há gateway (missão 1).');
+    const target = p.ip || p.target || '?';
+    const cls = p.ip ? classifyIp(p.ip) : null;
+    html += `<div class="tiles">
+      <div class="tile"><span class="k">Média</span><span class="v ${p.avg !== undefined ? latTone(p.avg) : ''}">${fmt(p.avg)} ms</span></div>
+      <div class="tile"><span class="k">Mín / máx</span><span class="v">${fmt(p.min)} / ${fmt(p.max)}</span></div>
+      <div class="tile"><span class="k">Jitter</span><span class="v">${fmt(p.jitter)} ms</span></div>
+      <div class="tile"><span class="k">Perda</span><span class="v">${fmt(p.lossPct, 0)}%</span></div>
+      <div class="tile"><span class="k">TTL recebido</span><span class="v">${p.ttl != null ? p.ttl : '—'}</span></div>
+    </div>`;
+    html += pingChart(p);
+    if (p.avg !== undefined) html += `<div class="legend"><span><i style="background:var(--good)"></i>até 60 ms: boa</span><span><i style="background:var(--accent-fill)"></i>61 a 150 ms: alta</span><span><i style="background:var(--bad)"></i>acima de 150 ms: ruim</span></div>`;
+    const ns = [];
+    if (p.received === 0 || p.avg === undefined) {
+      ns.push(note('bad', 'Nenhuma resposta. Pode ser: destino desligado, caminho com problema ou um firewall bloqueando o ping. Muitos servidores e o próprio Windows recusam ping de propósito.'));
+      ns.push(note('info', 'Isso não prova que o servidor está fora do ar. Teste a porta do serviço na missão “Ping falhou? Teste a porta”: se ela abrir, o servidor só bloqueia o ping.'));
+    } else {
+      const [t, l] = rateLatency(p.avg);
+      ns.push(note(t, `Latência <b>${esc(l.toLowerCase())}</b>: ${fmt(p.avg)} ms de ida e volta até ${esc(target)}.`));
+      if (cls && (cls.key === 'private')) ns.push(note('info', 'Este destino está na sua rede local, então o teste mede só o cabo ou o Wi-Fi até ele. No cabo o normal é menos de 2 ms; no Wi-Fi, até uns 10 ms.'));
+      if (p.hops != null) ns.push(note('info', `TTL ${p.ttl}: o destino provavelmente começou em ${p.ttlInit} (${p.ttlInit === 128 ? 'típico do Windows' : p.ttlInit === 64 ? 'típico de Linux, Android e roteadores' : 'típico de equipamentos de rede'}), então o pacote passou por cerca de <b>${p.hops} roteador${p.hops === 1 ? '' : 'es'}</b>.`));
+      if (p.lossPct > 0) ns.push(note(p.lossPct > 2 ? 'bad' : 'warn', `${fmt(p.lossPct, 0)}% dos pacotes se perderam. No Wi-Fi isso costuma ser sinal fraco ou interferência; repita o teste no cabo para comparar.`));
+      if (p.jitter > 30) ns.push(note('warn', 'Jitter alto: a latência está variando muito. Isso causa cortes em chamadas de voz e vídeo.'));
+      if (p.unreachable) ns.push(note('bad', '“Host de destino inacessível”: um roteador avisou que não sabe chegar lá. Não é perda comum, é falta de rota.'));
+      if (p.replies.length <= 4 && !opts.noTip) ns.push(note('info', 'Com só 4 pacotes, jitter e perda são estimativas. Para um retrato melhor, envie 20.'));
+      html += `<div class="row">${rateUse(p).map(([k, [tone, lb]]) => `<span class="tag ${tone}">${esc(k)}: ${esc(lb)}</span>`).join('')}</div>`;
+    }
+    return html + `<div class="notes">${ns.join('')}</div>`;
+  }
+  function m3(text, isEx) {
+    const p = parsePing(text);
+    if (!p.ok) return errorOut('m3', 'Não reconheci a saída de um ping. Cole todo o texto que apareceu depois do comando.');
+    setOut('m3', head(`Ping para ${p.target || p.ip || 'destino'}${p.ip && p.ip !== p.target ? ' (' + p.ip + ')' : ''}`, isEx) + pingAnalysis(p), isEx);
+    if (!isEx && p.avg !== undefined) {
+      state.pings.push({ target: p.target || p.ip, ip: p.ip, avg: p.avg, jitter: p.jitter, loss: p.lossPct, hops: p.hops, n: p.replies.length });
+      state.pings = state.pings.slice(-10); store.set('pings', state.pings); renderHistory();
+    }
+    if (!isEx) markDone('m3');
+  }
+  function renderHistory() {
+    const el = $('#ping-history');
+    if (!state.pings.length) { el.innerHTML = `<p class="empty">Seus pings aparecem aqui para comparar. Faça pelo menos três: o roteador, 8.8.8.8 e o servidor de Tóquio (hnd-jp-ping.vultr.com).</p>`; return; }
+    const max = Math.max(...state.pings.map(p => p.avg));
+    el.innerHTML = `<div class="tablewrap"><table class="data"><thead><tr><th>Destino</th><th>Média</th><th style="width:30%">Latência</th><th>Jitter</th><th>Perda</th><th>Saltos</th><th></th></tr></thead><tbody>${state.pings.map((p, i) => `<tr>
+      <td class="mono">${esc(p.target)}</td><td class="mono ${latTone(p.avg)}">${fmt(p.avg)} ms</td>
+      <td><div class="hbar"><span class="${latTone(p.avg)}" style="width:${Math.max(2, p.avg / max * 100)}%"></span></div></td>
+      <td class="mono">${fmt(p.jitter)} ms</td><td class="mono">${fmt(p.loss, 0)}%</td><td class="mono">${p.hops != null ? p.hops : '—'}</td>
+      <td><button class="btn ghost small" type="button" data-del="${i}" aria-label="Remover teste">Remover</button></td></tr>`).join('')}</tbody></table></div>
+      ${state.pings.length >= 2 ? `<p class="hint" style="margin-top:8px">Repare: quanto mais longe o destino, maior a latência e mais saltos. A velocidade do seu plano não muda isso.</p>` : ''}`;
+    $$('[data-del]', el).forEach(b => b.onclick = () => { state.pings.splice(Number(b.dataset.del), 1); store.set('pings', state.pings); renderHistory(); });
+  }
+
+  /* ---------- M4: física ---------- */
+  const DESTS = [['Rio de Janeiro', 360], ['Brasília', 870], ['Porto Alegre', 850], ['Recife', 2130], ['Manaus', 2690], ['Buenos Aires', 1680], ['Santiago', 2610], ['Miami', 6560], ['Nova York', 7680], ['Lisboa', 7950], ['Londres', 9490], ['Frankfurt', 9800], ['Joanesburgo', 7450], ['Sydney', 13350], ['Tóquio', 18530]];
+  function m4(userAction) {
+    const i = Number($('#phys-dest').value); const [name, km] = DESTS[i];
+    const fiber = km / 100;   // ida e volta: 2 × km ÷ 200.000 km/s, em ms
+    const vacuum = km / 150;  // ida e volta no vácuo: 2 × km ÷ 300.000 km/s
+    const meas = parseFloat($('#phys-meas').value);
+    const max = Math.max(fiber, isNaN(meas) ? 0 : meas) * 1.1;
+    const bar = (v, color, label) => `<div class="pbar"><span>${label}</span><div class="hbar" style="height:14px;min-width:40px"><span style="width:${Math.max(1, v / max * 100)}%;background:${color}"></span></div><span class="mono">${fmt(v)} ms</span></div>`;
+    let html = head(`São Paulo → ${name}`, false).replace(tag('good', 'Seus dados'), tag('neutral', `${km.toLocaleString('pt-BR')} km em linha reta`));
+    html += `<div class="box">${bar(vacuum, 'var(--muted)', 'Luz no vácuo')}${bar(fiber, 'var(--teal)', 'Luz na fibra (mínimo real)')}${!isNaN(meas) ? bar(meas, 'var(--accent-fill)', 'Seu ping medido') : ''}</div>`;
+    const ns = [note('info', `Mesmo com a fibra perfeita e em linha reta, um pacote leva no mínimo <b>${fmt(fiber)} ms</b> para ir e voltar de ${esc(name)}. Nenhum plano de internet, por mais rápido, baixa esse número.`)];
+    if (!isNaN(meas)) {
+      const ratio = meas / fiber;
+      ns.push(note(ratio < 1 ? 'warn' : 'good', ratio < 1 ? 'Seu ping ficou abaixo do mínimo físico: provavelmente o servidor que respondeu fica mais perto (CDN) ou a distância escolhida não é a do servidor real.' : `Seu ping é ${fmt(ratio)}× o mínimo teórico. A diferença vem de cabos que não seguem linha reta, dos roteadores no caminho e das filas de espera.`));
+    }
+    $('#out-m4').innerHTML = html + `<div class="notes">${ns.join('')}</div>`;
+    if (userAction) markDone('m4');
+  }
+
+  /* ---------- M5: traceroute ---------- */
+  function m5(text, isEx) {
+    const r = parseTrace(text);
+    if (!r.ok) return errorOut('m5', 'Não reconheci a saída de um tracert/traceroute. Cole as linhas numeradas com os saltos.');
+    const max = Math.max(1, ...r.hops.map(h => h.avg || 0));
+    let html = head(`Caminho até ${r.target || r.targetIp || 'o destino'}`, isEx);
+    html += `<div class="row">${tag('info', r.hops.length + ' saltos')}${r.reached ? tag('good', 'Chegou ao destino') : tag('warn', 'Não confirmou a chegada')}${r.cgnat ? tag('warn', 'CGNAT no salto ' + r.cgnat.n) : ''}${r.firstPublic ? tag('neutral', 'Internet a partir do salto ' + r.firstPublic.n) : ''}</div>`;
+    html += `<div class="tablewrap"><table class="data"><thead><tr><th>#</th><th>Endereço</th><th>Tipo</th><th>Tempo médio</th><th style="width:28%"></th></tr></thead><tbody>${r.hops.map(h => `<tr>
+      <td class="mono">${h.n}</td>
+      <td class="mono">${h.ip ? esc(h.ip) : '* * *'}${h.host ? `<br><span class="hint">${esc(h.host)}</span>` : ''}</td>
+      <td>${h.cls ? tag(toneOf(h.cls.key), h.cls.label) : tag('neutral', 'sem resposta')}</td>
+      <td class="mono ${h.avg !== null ? latTone(h.avg) : ''}">${h.avg !== null ? fmt(h.avg) + ' ms' : '—'}</td>
+      <td>${h.avg !== null ? `<div class="hbar"><span class="${latTone(h.avg)}" style="width:${Math.max(2, h.avg / max * 100)}%"></span></div>` : ''}</td></tr>`).join('')}</tbody></table></div>`;
+    const ns = [];
+    const h1 = r.hops[0];
+    if (h1 && h1.cls && h1.cls.key === 'private') ns.push(note('info', `Salto 1 (${esc(h1.ip)}) é o seu roteador: o primeiro aparelho fora do seu computador.`));
+    if (r.cgnat) ns.push(note('warn', `Salto ${r.cgnat.n} (${esc(r.cgnat.ip)}) está na faixa do CGNAT: o provedor faz mais um NAT antes da internet.`));
+    const st = r.hops.filter(h => h.timeout);
+    if (st.length && r.reached) ns.push(note('info', `Salto${st.length > 1 ? 's' : ''} ${st.map(h => h.n).join(', ')} não responde${st.length > 1 ? 'm' : ''} ao teste, mas os seguintes respondem: é só um roteador configurado para não responder. Não é problema.`));
+    if (!r.reached && r.hops.length && r.hops[r.hops.length - 1].timeout) ns.push(note('warn', 'Os últimos saltos não respondem. O destino pode bloquear esse tipo de teste ou o caminho está interrompido. Compare com um ping.'));
+    r.jumps.forEach(j => ns.push(note('warn', `Entre os saltos ${j.from.n} e ${j.to.n} a latência sobe <b>${fmt(j.delta, 0)} ms</b> e não volta a cair. É ali que o pacote percorre uma grande distância, como um cabo submarino (${fmt(j.delta * 100, 0)} km de fibra dariam ${fmt(j.delta, 0)} ms de ida e volta).`)));
+    if (!r.jumps.length && r.reached) ns.push(note('good', 'A latência cresce aos poucos, sem nenhum trecho com salto grande.'));
+    html += `<div class="notes">${ns.join('')}</div>`;
+    setOut('m5', html, isEx);
+    if (!isEx) markDone('m5');
+  }
+
+  /* ---------- M6: DNS ---------- */
+  function m6(text, isEx) {
+    const r = parseDns(text);
+    if (!r.ok) return errorOut('m6', 'Não reconheci a saída do nslookup. Cole tudo, inclusive as linhas “Servidor” e “Nome”.');
+    const sIp = r.serverIp;
+    let who = '';
+    if (sIp) {
+      if (RESOLVERS[sIp]) who = RESOLVERS[sIp];
+      else if (state.local && sIp === state.local.gateway) who = 'seu roteador';
+      else { const c = classifyIp(sIp); who = c.key === 'private' ? 'um servidor da rede local (provavelmente o roteador)' : c.key === 'public' ? 'servidor DNS do provedor ou da empresa' : c.label; }
+    }
+    let html = head(`Consulta: ${r.name || '—'}`, isEx);
+    html += `<dl class="kv">
+      <dt>Quem respondeu</dt><dd>${sIp ? esc(sIp) + ' ' + tag('neutral', who) : '—'}</dd>
+      <dt>Tipo de resposta</dt><dd>${r.fromDig ? tag('info', 'dig') : r.nonAuth ? tag('info', 'Do cache (não autoritativa)') : tag('neutral', 'Autoritativa ou não informada')}</dd>
+      ${r.ipv4.length ? `<dt>IPv4 (registro A)</dt><dd>${r.ipv4.map(ip => esc(ip) + ' ' + ipTag(ip)).join('<br>')}</dd>` : ''}
+      ${r.ipv6.length ? `<dt>IPv6 (registro AAAA)</dt><dd>${r.ipv6.map(esc).join('<br>')}</dd>` : ''}
+      ${r.aliases.length ? `<dt>Apelidos (CNAME)</dt><dd>${r.aliases.map(esc).join('<br>')}</dd>` : ''}
+      ${r.mx.length ? `<dt>E-mail (MX)</dt><dd>${r.mx.sort((a, b) => a.pref - b.pref).map(m => `${esc(m.host)} ${tag('neutral', 'prioridade ' + m.pref)}`).join('<br>')}</dd>` : ''}
+      ${r.records.length ? `<dt>TTL</dt><dd>${r.records[0].ttl} s ${tag('neutral', 'tempo em cache')}</dd>` : ''}
+    </dl>`;
+    const ns = [];
+    if (r.notFound) ns.push(note('bad', 'O domínio não existe (NXDOMAIN). Confira a digitação.'));
+    if (r.nonAuth) ns.push(note('info', '“Não autoritativa” quer dizer que a resposta veio de um cache no caminho, não do servidor dono do domínio. É o normal e é mais rápido.'));
+    if (r.ipv4.length > 1) ns.push(note('info', 'Vários IPs para o mesmo nome: sites grandes espalham a carga entre muitos servidores.'));
+    if (r.ipv6.length) ns.push(note('info', 'O site também tem endereço IPv6. Se a sua rede tiver IPv6, o navegador pode preferi-lo.'));
+    if (r.ipv4.length) ns.push(note('info', `Experimente: <code>ping ${esc(r.ipv4[0])}</code>. Se o ping pelo IP funciona e pelo nome não, o problema é o DNS.`));
+    if (r.mx.length) ns.push(note('info', 'Os registros MX dizem para quais servidores enviar e-mails deste domínio. O número menor tem prioridade.'));
+    html += `<div class="notes">${ns.join('')}</div>`;
+    setOut('m6', html, isEx);
+    if (!isEx) markDone('m6');
+  }
+
+  /* ---------- M7: simulador ---------- */
+  const NODES = { pc: [70, 150, 'Você', ''], router: [235, 150, 'Roteador', 'NAT'], net: [410, 150, 'Internet', 'provedor'], dns: [600, 62, 'DNS', '8.8.8.8'], site: [600, 238, 'Servidor', '203.0.113.80'] };
+  const LINKS = [['pc', 'router'], ['router', 'net'], ['net', 'dns'], ['net', 'site']];
+  const PHASE_COLORS = { DNS: '#8DBBF5', TCP: '#5CC8BF', TLS: '#EBA0C0', HTTP: '#F0A940', Recursos: '#C9D3DC' };
+  let sim = { i: 0, playing: false, timer: null, anim: null };
+  function simSteps() {
+    const rtt = Number($('#sim-rtt').value), cache = $('#sim-cache').checked, https = $('#sim-https').checked;
+    const L = state.local ? state.local.ip : '192.168.0.15', P = state.publicIp && classifyIp(state.publicIp).key !== 'invalid' ? state.publicIp : '203.0.113.45';
+    const port = https ? 443 : 80, dnsRtt = 20, server = 40;
+    const up = ['pc', 'router', 'net'], toS = [...up, 'site'], fromS = [...toS].reverse(), toD = [...up, 'dns'], fromD = [...toD].reverse();
+    const pk = (layer, proto, src, dst, content) => ({ layer, proto, src, dst, content });
+    const S = [];
+    S.push({ t: 'Você aperta Enter', ph: null, cost: 0, path: null, txt: 'O navegador separa o endereço: protocolo (https), nome (www.exemplo.com.br) e caminho (/).', p: pk('Aplicação', 'URL', '—', '—', `${https ? 'https' : 'http'}://www.exemplo.com.br/`) });
+    S.push({ t: 'Procura no cache DNS', ph: 'DNS', cost: 0, path: null, txt: cache ? 'Encontrou: o IP do site já está guardado. Pula a consulta ao DNS.' : 'Não encontrou o nome no cache. Precisa perguntar ao servidor DNS.', p: pk('Aplicação', 'cache local', '—', '—', cache ? 'www.exemplo.com.br = 203.0.113.80 (guardado)' : 'nada guardado') });
+    if (!cache) {
+      S.push({ t: 'Pergunta ao DNS', ph: 'DNS', cost: dnsRtt / 2, path: toD, txt: 'Pacote UDP para a porta 53. No roteador, o NAT troca o seu IP local pelo IP público.', p: pk('Aplicação · DNS sobre UDP', 'UDP 53', `${L}:51200 → após NAT ${P}:40007`, '8.8.8.8:53', 'Qual o IP de www.exemplo.com.br? (registro A)') });
+      S.push({ t: 'DNS responde', ph: 'DNS', cost: dnsRtt / 2, path: fromD, txt: 'A resposta volta. O roteador consulta a tabela NAT e entrega ao seu computador.', p: pk('Aplicação · DNS', 'UDP 53', '8.8.8.8:53', `${P}:40007 → após NAT ${L}:51200`, 'www.exemplo.com.br = 203.0.113.80 (TTL 300 s)') });
+    }
+    S.push({ t: 'TCP: SYN', ph: 'TCP', cost: rtt / 2, path: toS, txt: 'Primeira etapa do aperto de mão: pede para abrir conexão na porta ' + port + '.', p: pk('Transporte · TCP', 'TCP ' + port, `${L}:52341 → após NAT ${P}:40001`, `203.0.113.80:${port}`, 'SYN — quero conversar, meu número inicial é x') });
+    S.push({ t: 'TCP: SYN-ACK', ph: 'TCP', cost: rtt / 2, path: fromS, txt: 'O servidor aceita e confirma.', p: pk('Transporte · TCP', 'TCP ' + port, `203.0.113.80:${port}`, `${P}:40001 → após NAT ${L}:52341`, 'SYN-ACK — aceito, meu número inicial é y') });
+    if (https) {
+      S.push({ t: 'ACK + TLS: ClientHello', ph: 'TLS', cost: rtt / 2, path: toS, txt: 'Confirma a conexão e já propõe a criptografia: versões e chaves.', p: pk('Apresentação · TLS 1.3', 'TCP 443', `${P}:40001`, '203.0.113.80:443', 'ACK + ClientHello (nome do site, chave pública temporária)') });
+      S.push({ t: 'TLS: certificado', ph: 'TLS', cost: rtt / 2, path: fromS, txt: 'O servidor envia o certificado. O navegador confere se foi assinado por uma autoridade confiável e se o nome bate.', p: pk('Apresentação · TLS 1.3', 'TCP 443', '203.0.113.80:443', `${P}:40001`, 'ServerHello + certificado de www.exemplo.com.br') });
+      S.push({ t: 'Pedido HTTP (cifrado)', ph: 'HTTP', cost: rtt / 2, path: toS, txt: 'O pedido viaja criptografado. Quem estiver no caminho vê só o IP de destino, não a página pedida.', p: pk('Aplicação · HTTP', 'TCP 443', `${P}:40001`, '203.0.113.80:443', '🔒 GET / HTTP/1.1  Host: www.exemplo.com.br') });
+    } else {
+      S.push({ t: 'ACK + pedido HTTP', ph: 'HTTP', cost: rtt / 2, path: toS, txt: 'Sem TLS: o pedido vai em texto aberto. Qualquer um no caminho (por exemplo, num Wi-Fi público) consegue ler.', p: pk('Aplicação · HTTP', 'TCP 80', `${P}:40001`, '203.0.113.80:80', 'GET / HTTP/1.1  Host: www.exemplo.com.br  (texto aberto!)') });
+    }
+    S.push({ t: 'Servidor processa', ph: 'HTTP', cost: server, path: null, txt: 'O servidor monta a página (consulta banco de dados, lê arquivos).', p: pk('Aplicação', '—', '—', '—', 'tempo de processamento: ' + server + ' ms') });
+    S.push({ t: 'Resposta 200 OK', ph: 'HTTP', cost: rtt / 2, path: fromS, txt: 'Chega o primeiro byte da página: este é o TTFB (tempo até o primeiro byte).', p: pk('Aplicação · HTTP', 'TCP ' + port, `203.0.113.80:${port}`, `${P}:40001 → após NAT ${L}:52341`, `${https ? '🔒 ' : ''}HTTP/1.1 200 OK  Content-Type: text/html`) });
+    S.push({ t: 'CSS, scripts e imagens', ph: 'Recursos', cost: rtt, path: toS, txt: 'O navegador lê o HTML e pede os outros arquivos pela mesma conexão: mais idas e voltas.', p: pk('Aplicação · HTTP', 'TCP ' + port, `${P}:40001`, `203.0.113.80:${port}`, 'GET /estilo.css, /app.js, /logo.png …') });
+    S.push({ t: 'Página na tela', ph: null, cost: 0, path: null, txt: 'O navegador monta e desenha a página.', p: pk('Aplicação', '—', '—', '—', 'pronto!') });
+    let acc = 0; S.forEach(s => { acc += s.cost; s.at = acc; });
+    return S;
+  }
+  function drawSim(activePath) {
+    const svg = $('#sim-svg'); if (!svg) return;
+    NODES.pc[3] = state.local ? state.local.ip : '192.168.0.15';
+    const onSet = new Set(); if (activePath) for (let i = 0; i < activePath.length - 1; i++) onSet.add([activePath[i], activePath[i + 1]].sort().join('-'));
+    let s = '';
+    LINKS.forEach(([a, b]) => { const A = NODES[a], B = NODES[b]; s += `<line class="link${onSet.has([a, b].sort().join('-')) ? ' on' : ''}" x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}"/>`; });
+    Object.entries(NODES).forEach(([k, [x, y, label, sub]]) => {
+      const on = activePath && activePath.includes(k);
+      s += `<g class="n${on ? ' on' : ''}"><rect x="${x - 62}" y="${y - 30}" width="124" height="60" rx="12"/><text x="${x}" y="${y - 4}" text-anchor="middle">${esc(label)}</text><text class="sub" x="${x}" y="${y + 15}" text-anchor="middle">${esc(sub)}</text></g>`;
+    });
+    s += `<circle class="pkt" id="sim-pkt" r="9" cx="-20" cy="-20"/>`;
+    svg.innerHTML = s;
+  }
+  function animatePacket(path, ms, done) {
+    cancelAnimationFrame(sim.anim);
+    const pkt = $('#sim-pkt');
+    if (!path || !pkt) { done && done(); return; }
+    const pts = path.map(k => NODES[k]);
+    if (reduced) { const last = pts[pts.length - 1]; pkt.setAttribute('cx', last[0]); pkt.setAttribute('cy', last[1]); done && done(); return; }
+    const segs = []; let total = 0;
+    for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segs.push(d); total += d; }
+    const t0 = performance.now();
+    const tick = now => {
+      const f = Math.min(1, (now - t0) / ms); let dist = f * total, i = 0;
+      while (i < segs.length - 1 && dist > segs[i]) { dist -= segs[i]; i++; }
+      const a = pts[i], b = pts[i + 1], g = segs[i] ? dist / segs[i] : 1;
+      pkt.setAttribute('cx', a[0] + (b[0] - a[0]) * g); pkt.setAttribute('cy', a[1] + (b[1] - a[1]) * g);
+      if (f < 1) sim.anim = requestAnimationFrame(tick); else done && done();
+    };
+    sim.anim = requestAnimationFrame(tick);
+  }
+  function renderSim(animate) {
+    const S = simSteps(); sim.i = Math.max(0, Math.min(sim.i, S.length - 1));
+    const s = S[sim.i];
+    drawSim(s.path);
+    $('#sim-inspector').innerHTML = `<div class="h">${sim.i + 1}. ${esc(s.t)}</div><div>${esc(s.txt)}</div>
+      <div><span class="k">Camada:</span> ${esc(s.p.layer)}</div><div><span class="k">Protocolo:</span> ${esc(s.p.proto)}</div>
+      <div><span class="k">Origem:</span> ${esc(s.p.src)}</div><div><span class="k">Destino:</span> ${esc(s.p.dst)}</div>
+      <div><span class="k">Conteúdo:</span> ${esc(s.p.content)}</div><div><span class="k">Tempo acumulado:</span> ${fmt(s.at, 0)} ms</div>`;
+    $('#sim-steps').innerHTML = S.map((x, i) => `<li class="${i === sim.i ? 'cur' : i < sim.i ? 'past' : ''}" data-i="${i}"><span class="i">${i + 1}</span><span>${esc(x.t)}</span><span class="ms">${fmt(x.at, 0)} ms</span></li>`).join('');
+    $$('#sim-steps li').forEach(li => li.onclick = () => { stopPlay(); sim.i = Number(li.dataset.i); renderSim(true); });
+    const cur = $('#sim-steps li.cur'); if (cur && cur.scrollIntoView && animate) cur.scrollIntoView({ block: 'nearest' });
+    const totals = {}; S.forEach(x => { if (x.ph) totals[x.ph] = (totals[x.ph] || 0) + x.cost; });
+    const total = S[S.length - 1].at; const ttfb = S.find(x => /200 OK/.test(x.t)).at;
+    $('#sim-phases').innerHTML = Object.entries(totals).filter(([, v]) => v > 0).map(([k, v]) => `<span style="flex:${v};background:${PHASE_COLORS[k]}" title="${k}: ${fmt(v, 0)} ms">${v / total > 0.09 ? k : ''}</span>`).join('');
+    $('#sim-legend').innerHTML = Object.entries(totals).map(([k, v]) => `<span><i style="background:${PHASE_COLORS[k]}"></i>${k}: ${fmt(v, 0)} ms</span>`).join('') + `<span><b>Primeiro byte: ${fmt(ttfb, 0)} ms</b></span><span><b>Total: ${fmt(total, 0)} ms</b></span>`;
+    if (animate && s.path) animatePacket(s.path, Math.max(500, Math.min(1500, s.cost * 12)), null);
+    else { const pkt = $('#sim-pkt'); if (pkt && s.path) { const l = NODES[s.path[s.path.length - 1]]; pkt.setAttribute('cx', l[0]); pkt.setAttribute('cy', l[1]); } }
+    if (sim.i === S.length - 1) markDone('m7');
+  }
+  function stopPlay() { sim.playing = false; clearTimeout(sim.timer); $('#sim-play').textContent = '▶ Reproduzir'; }
+  function play() {
+    if (sim.playing) return stopPlay();
+    const S = simSteps(); if (sim.i >= S.length - 1) sim.i = 0;
+    sim.playing = true; $('#sim-play').textContent = '❚❚ Pausar';
+    const stepFn = () => {
+      if (!sim.playing) return;
+      renderSim(true);
+      const s = simSteps()[sim.i];
+      const wait = reduced ? 1200 : Math.max(900, Math.min(1900, s.cost * 12 + 500));
+      if (sim.i >= simSteps().length - 1) { stopPlay(); return; }
+      sim.timer = setTimeout(() => { sim.i++; stepFn(); }, wait);
+    };
+    stepFn();
+  }
+
+  /* ---------- M8: calculadora ---------- */
+  function m8(userAction) {
+    const ip = $('#calc-ip').value.trim(), prefix = Number($('#calc-prefix').value);
+    if (!isIPv4(ip)) { $('#out-m8').innerHTML = note('bad', 'Digite um IPv4 válido, como 192.168.0.15.'); $('#out-m8b').innerHTML = ''; return; }
+    const s = subnetInfo(ip, prefix);
+    const bin = ip.split('.').map(o => Number(o).toString(2).padStart(8, '0'));
+    let k = 0;
+    const bits = bin.map(o => `<div class="octet">${o.split('').map(b => `<span class="${k++ < prefix ? 'net' : 'host'}">${b}</span>`).join('')}</div>`).join('');
+    $('#out-m8').innerHTML = `<div class="bits" aria-label="IP em binário: bits verdes são a rede, amarelos são a máquina">${bits}</div>
+      <div class="legend"><span><i style="background:var(--good-bg);border:1px solid var(--teal)"></i>${prefix} bits de rede</span><span><i style="background:var(--warn-bg);border:1px solid var(--accent)"></i>${32 - prefix} bits de máquina</span></div>
+      <div class="tiles">
+        <div class="tile"><span class="k">Rede</span><span class="v">${s.network}</span></div>
+        <div class="tile"><span class="k">Broadcast</span><span class="v">${s.broadcast}</span></div>
+        <div class="tile"><span class="k">Primeira máquina</span><span class="v">${s.first}</span></div>
+        <div class="tile"><span class="k">Última máquina</span><span class="v">${s.last}</span></div>
+        <div class="tile"><span class="k">Máquinas</span><span class="v">${s.hosts.toLocaleString('pt-BR')}</span></div>
+      </div>
+      <div class="notes">${note('info', `Máscara ${s.mask} = /${prefix}. Máquinas = 2<sup>${32 - prefix}</sup> − 2 = ${s.hosts.toLocaleString('pt-BR')} (descontando o endereço da rede e o de broadcast).`)}${classifyIp(ip).key !== 'private' ? note('info', `${esc(ip)} é ${esc(classifyIp(ip).label.toLowerCase())}.`) : ''}</div>`;
+    const ip2 = $('#calc-ip2').value.trim();
+    if (isIPv4(ip2)) {
+      const same = sameNetwork(ip, ip2, prefix); const n2 = subnetInfo(ip2, prefix).network;
+      $('#out-m8b').innerHTML = note(same ? 'good' : 'warn', same ? `<b>Mesma rede.</b> ${esc(ip)} e ${esc(ip2)} estão em ${s.network}/${prefix}: conversam direto, sem passar pelo roteador.` : `<b>Redes diferentes.</b> ${esc(ip)} está em ${s.network}/${prefix} e ${esc(ip2)} em ${n2}/${prefix}. Para conversarem, os pacotes precisam passar por um roteador.`);
+    } else $('#out-m8b').innerHTML = ip2 ? note('bad', 'O segundo IP não é válido.') : '';
+    if (userAction) markDone('m8');
+  }
+
+  /* ---------- M9: duas máquinas ---------- */
+  function renderPairInfo() {
+    const pip = $('#pair-ip').value.trim();
+    const mine = state.local ? state.local.ip : null;
+    $('#pair-url').textContent = `http://${mine || 'SEU_IP'}:8000`;
+    const el = $('#pair-same');
+    if (!isIPv4(pip)) { el.innerHTML = ''; return; }
+    if (!mine) { el.innerHTML = tag('neutral', 'Faça a missão 1 para comparar as redes'); return; }
+    const same = sameNetwork(mine, pip, state.local.prefix || 24);
+    el.innerHTML = same ? tag('good', 'Mesma rede que você') : tag('warn', 'Rede diferente: o ping vai passar pelo roteador');
+  }
+  function m9(text) {
+    const p = parsePing(text);
+    const o = $('#out-m9');
+    if (!p.ok) { o.innerHTML = note('bad', 'Não reconheci a saída do ping.'); return; }
+    let html = '<div class="result">' + head(`Ping para ${p.ip || p.target}`, false) + pingAnalysis(p, { noTip: true });
+    const ns = [];
+    if (p.avg === undefined) ns.push(note('warn', 'Sem resposta do colega. Causa mais comum: o firewall dele recusa ping (no Windows, a regra “Solicitação de Eco ICMPv4” vem desativada). Isso é proteção, não defeito. Confira também se o IP está certo e se vocês estão na mesma rede.'));
+    else {
+      ns.push(note('good', 'As duas máquinas se enxergam na rede.'));
+      if (p.ttl != null) ns.push(note('info', `TTL ${p.ttl}: ${p.ttlInit === 128 ? 'o colega usa Windows' : p.ttlInit === 64 ? 'o colega usa Linux ou macOS' : 'resposta de um equipamento de rede'}${p.hops === 0 ? ', e nenhum roteador ficou no meio: vocês estão na mesma rede' : ''}.`));
+    }
+    html += `<div class="notes">${ns.join('')}</div></div>`;
+    o.innerHTML = html; markDone('m9');
+  }
+  function m9b(text, isEx) {
+    const r = parseArp(text);
+    const o = $('#out-m9b');
+    if (!r.ok) { o.innerHTML = note('bad', 'Não reconheci a tabela ARP. Cole as linhas com IP e endereço físico.'); return; }
+    const gw = state.local && state.local.gateway ? state.local.gateway : (isEx ? '192.168.0.1' : null);
+    const pip = $('#pair-ip').value.trim();
+    const rows = r.entries.map(e => {
+      const obs = [];
+      if (e.ip === gw) obs.push(tag('info', 'gateway (roteador)'));
+      if (pip && e.ip === pip) obs.push(tag('good', 'seu colega'));
+      if (e.broadcast) obs.push(tag('neutral', 'broadcast'));
+      if (e.multicast) obs.push(tag('neutral', 'multicast'));
+      if (e.localAdmin) obs.push(tag('info', 'MAC aleatório'));
+      if (e.dupMac) obs.push(tag('warn', 'MAC repetido'));
+      return `<tr><td class="mono">${esc(e.ip)}</td><td class="mono">${esc(e.mac)}</td><td>${esc(e.type)}</td><td>${obs.join(' ')}</td></tr>`;
+    }).join('');
+    const ns = [note('info', 'O ARP traduz IP em MAC dentro da rede local. Só aparecem aparelhos com quem seu computador falou recentemente.')];
+    if (pip && !r.entries.some(e => e.ip === pip)) ns.push(note('warn', `O IP do colega (${esc(pip)}) não está na lista. Mande um ping para ele e rode o comando de novo.`));
+    if (r.entries.some(e => e.dupMac)) ns.push(note('warn', 'O mesmo MAC aparece para IPs diferentes. Pode ser normal (um roteador com dois IPs), mas também é o sinal clássico de ARP falsificado, usado no ataque do homem no meio. Se o MAC do gateway mudar de repente, desconfie.'));
+    o.innerHTML = '<div class="result">' + head(`${r.entries.length} vizinhos conhecidos`, isEx) + `<div class="tablewrap"><table class="data"><thead><tr><th>IP</th><th>MAC</th><th>Tipo</th><th>Observação</th></tr></thead><tbody>${rows}</tbody></table></div><div class="notes">${ns.join('')}</div></div>`;
+    o.dataset.example = isEx ? '1' : '0';
+    if (!isEx) markDone('m9');
+  }
+
+  /* ---------- M10: portas ---------- */
+  function m10(text, isEx) {
+    const r = parseNetstat(text);
+    if (!r.ok) return errorOut('m10', 'Não reconheci a lista de conexões. Cole as linhas que começam com TCP ou UDP.');
+    const scopeTag = s => s === 'local' ? tag('good', 'só este PC') : s === 'todas' ? tag('warn', 'toda a rede') : tag('info', 'uma interface');
+    let html = head(`${r.services.length} portas escutando · ${r.established.length} conexões ativas`, isEx);
+    html += r.services.length ? `<div class="tablewrap"><table class="data"><thead><tr><th>Porta</th><th>Proto</th><th>Serviço provável</th><th>Aceita conexões de</th><th></th></tr></thead><tbody>${r.services.map(s => `<tr>
+      <td class="mono">${s.port}</td><td class="mono">${s.proto.toUpperCase()}</td><td>${esc(s.name)}</td><td>${scopeTag(s.scope)} <span class="hint mono">${esc(s.host)}</span></td>
+      <td>${s.risky ? tag(s.scope === 'local' ? 'neutral' : 'warn', 'nunca expor na internet') : ''}</td></tr>`).join('')}</tbody></table></div>` : `<p class="empty">Nenhuma porta escutando na saída colada.</p>`;
+    const ns = [];
+    ns.push(note('info', '“Escutando” quer dizer que um programa espera conexões nessa porta. Em 127.0.0.1 só o próprio computador acessa; em 0.0.0.0 ou [::], qualquer máquina da rede pode tentar, se o firewall deixar.'));
+    if (r.services.some(s => s.port === 3389 && s.scope !== 'local')) ns.push(note('warn', 'A área de trabalho remota (3389) está aberta. Em uma rede interna pode ser intencional, mas exposta na internet é alvo de ataques constantes.'));
+    if (r.services.some(s => [135, 139, 445].includes(s.port))) ns.push(note('info', 'As portas 135, 139 e 445 são do compartilhamento de arquivos e serviços do Windows. São normais na rede interna e o roteador não deve encaminhá-las para a internet.'));
+    if (r.services.some(s => s.port >= 49152)) ns.push(note('info', 'Portas acima de 49152 são dinâmicas: o sistema escolhe para serviços internos e para o lado cliente das conexões.'));
+    const rp = Object.entries(r.remotePorts).sort((a, b) => b[1] - a[1]);
+    if (rp.length) ns.push(note('info', 'Conexões ativas por porta de destino: ' + rp.map(([p, n]) => `<b>${p}</b> ${esc(portName(Number(p)))} (${n})`).join(', ') + '. A maior parte costuma ser 443: páginas e aplicativos usando HTTPS.'));
+    if (r.rows.some(x => x.pid !== null) && state.os === 'windows') ns.push(note('info', 'A última coluna é o PID, o número do processo. No Gerenciador de Tarefas, aba Detalhes, você descobre qual programa é.'));
+    html += `<div class="notes">${ns.join('')}</div>`;
+    setOut('m10', html, isEx);
+    if (!isEx) markDone('m10');
+  }
+
+  /* ---------- M11: quiz ---------- */
+  const QUIZ = [
+    ['O ipconfig de um computador mostra 169.254.10.4. O que isso indica?', ['O computador está com IP público', 'O computador não recebeu IP do DHCP', 'O computador está na rede de convidados', 'É o IP do roteador'], 1, 'Endereços 169.254.x.x (APIPA) são criados pelo próprio sistema quando o DHCP não responde. O computador não vai navegar até receber um IP de verdade.'],
+    ['ping 8.8.8.8 funciona, mas ping google.com diz que não encontra o host. Onde está o problema?', ['No cabo de rede', 'No DNS', 'No firewall do Google', 'Na placa de rede'], 1, 'Se o ping pelo IP funciona, a conexão com a internet está boa. O que falhou foi a tradução do nome em IP: o DNS.'],
+    ['Os PCs 192.168.1.10/24 e 192.168.2.10/24 conversam direto, sem roteador?', ['Sim, os dois são privados', 'Sim, a máscara é igual', 'Não, estão em redes diferentes', 'Só se estiverem no mesmo switch'], 2, 'Com /24, o terceiro número faz parte da rede: 192.168.1.0 e 192.168.2.0 são redes diferentes. Os pacotes precisam passar por um roteador.'],
+    ['Qual serviço normalmente usa a porta 443?', ['HTTPS', 'DNS', 'SSH', 'Área de trabalho remota'], 0, 'A porta 443 é a do HTTPS, a web com criptografia. A 53 é DNS, a 22 é SSH e a 3389 é RDP.'],
+    ['Um plano de 300 Mbps baixa arquivos a no máximo cerca de…', ['300 MB/s', '30 MB/s', '37,5 MB/s', '3 MB/s'], 2, '1 byte = 8 bits. 300 megabits ÷ 8 = 37,5 megabytes por segundo, na melhor das hipóteses.'],
+    ['No traceroute, o salto 4 mostra * * * mas os saltos 5 a 9 respondem. O que isso significa?', ['A internet caiu no salto 4', 'Aquele roteador só não responde ao teste', 'Houve perda de 100% dos pacotes', 'O destino está bloqueado'], 1, 'Se os saltos seguintes respondem, os pacotes passaram pelo salto 4. Ele apenas está configurado para não responder ao traceroute.'],
+    ['A página do roteador mostra IP WAN 100.72.15.3, mas o site de “meu IP” mostra outro. Por quê?', ['O roteador está com defeito', 'O site está errado', 'O provedor usa CGNAT', 'O Wi-Fi está lento'], 2, 'A faixa 100.64.0.0/10 é do CGNAT: o provedor faz um NAT a mais e vários clientes saem pelo mesmo IP público, que é o que o site mostra.'],
+    ['O cadeado do HTTPS garante que…', ['O site é confiável e honesto', 'Os dados viajam criptografados até o servidor', 'O site não tem vírus', 'Ninguém sabe qual site você visitou'], 1, 'O TLS protege o caminho: ninguém no meio lê ou altera os dados. Sites falsos também podem ter cadeado, por isso é preciso conferir o endereço.'],
+    ['Para uma chamada de vídeo sem cortes, o que mais importa?', ['Download muito alto', 'Baixa latência, pouco jitter e nenhuma perda', 'Upload muito alto apenas', 'Um IP público fixo'], 1, 'Chamadas usam pouca banda, mas são sensíveis a atraso, variação de atraso e perda de pacotes.'],
+    ['Um colega não responde ao seu ping, mas navega normalmente na mesma rede. A causa mais provável é…', ['O cabo dele está ruim', 'O firewall dele bloqueia ping', 'Vocês estão na internet errada', 'O DNS dele caiu'], 1, 'Por padrão, o Firewall do Windows recusa pedidos de ping vindos de outras máquinas. É uma medida de segurança.'],
+    ['O ping para www.u-tokyo.ac.jp dá tempo esgotado, mas o site abre no navegador. Por quê?', ['O site está fora do ar', 'O servidor descarta ping (ICMP), mas aceita TCP na porta 443', 'O navegador usa um IP diferente', 'O DNS está com problema'], 1, 'Ping usa ICMP, que muitos servidores bloqueiam. O navegador usa TCP na porta 443, que precisa ficar aberta para o site funcionar.'],
+    ['O teste de porta responde “conexão recusada” (Connection refused). O que isso significa?', ['Não há internet', 'A máquina está ligada, mas nada escuta nessa porta', 'Um firewall descartou o pacote em silêncio', 'O DNS não encontrou o nome'], 1, '“Recusada” já é uma resposta: a máquina existe e avisou que a porta está fechada. Quando um firewall descarta o pacote, não vem resposta nenhuma e o teste termina por tempo esgotado.'],
+    ['No cronômetro do curl, a etapa “TCP” levou 270 ms. O que isso indica?', ['A página é muito pesada', 'A latência de ida e volta até o servidor é de cerca de 270 ms', 'O DNS está lento', 'O servidor demorou para montar a página'], 1, 'O aperto de mão do TCP custa exatamente uma ida e volta. Por isso essa etapa mede o “ping” até o servidor, mesmo quando o ping está bloqueado.'],
+    ['No mesmo computador, o teste de velocidade deu 480 Mbps no cabo e 120 Mbps no Wi-Fi. Onde está o gargalo?', ['No provedor', 'No Wi-Fi', 'No DNS', 'No servidor do teste'], 1, 'Pelo cabo o provedor entregou 480 Mbps. A perda acontece entre o computador e o roteador: distância, paredes, interferência ou padrão do Wi-Fi.'],
+  ];
+  const quizAns = {};
+  function renderQuiz() {
+    $('#quiz').innerHTML = QUIZ.map(([q, opts], i) => `<div class="q" data-q="${i}"><p class="qt">${i + 1}. ${esc(q)}</p><div class="opts">${opts.map((o, j) => `<button type="button" class="opt" data-j="${j}">${esc(o)}</button>`).join('')}</div><p class="fb" aria-live="polite"></p></div>`).join('');
+    $$('#quiz .q').forEach(qe => {
+      const i = Number(qe.dataset.q);
+      $$('.opt', qe).forEach(b => b.onclick = () => {
+        const j = Number(b.dataset.j), right = QUIZ[i][2];
+        $$('.opt', qe).forEach(x => { x.disabled = true; const xj = Number(x.dataset.j); if (xj === right) x.classList.add('right'); else if (xj === j) x.classList.add('wrong'); });
+        quizAns[i] = j === right;
+        $('.fb', qe).innerHTML = `${j === right ? tag('good', 'Certo') : tag('bad', 'Não é essa')} ${esc(QUIZ[i][3])}`;
+        updateScore();
+      });
+    });
+    updateScore();
+  }
+  function updateScore() {
+    const n = Object.keys(quizAns).length, ok = Object.values(quizAns).filter(Boolean).length;
+    $('#quiz-score').innerHTML = n === QUIZ.length
+      ? `<div class="row">${tag(ok >= 11 ? 'good' : ok >= 7 ? 'warn' : 'bad', `${ok} de ${QUIZ.length} certas`)}<button class="btn ghost small" type="button" id="quiz-again">Refazer</button></div>`
+      : `<p class="hint">${n} de ${QUIZ.length} respondidas</p>`;
+    const again = $('#quiz-again'); if (again) again.onclick = () => { Object.keys(quizAns).forEach(k => delete quizAns[k]); renderQuiz(); };
+    if (n === QUIZ.length) markDone('m11');
+  }
+
+  /* ---------- sites ---------- */
+  const SITES = [
+    ['IP público', 'meuip.com', 'https://meuip.com/', 'Seu IP global'],
+    ['Dono do IP', 'ipinfo.io', 'https://ipinfo.io', 'Provedor (ASN), cidade e país de um IP'],
+    ['Velocidade', 'simet.nic.br', 'https://simet.nic.br', 'Medidor do NIC.br: velocidade, latência e perda'],
+    ['Velocidade', 'speedtest.net', 'https://www.speedtest.net', 'Download, upload e ping'],
+    ['Velocidade', 'fast.com', 'https://fast.com', 'Teste rápido de download'],
+    ['DNS', 'dnschecker.org', 'https://dnschecker.org', 'Para onde um domínio aponta pelo mundo'],
+    ['Domínios .br', 'registro.br', 'https://registro.br', 'Quem registrou um domínio .br'],
+    ['Fora do ar?', 'downdetector.com.br', 'https://downdetector.com.br', 'Se um serviço caiu para muita gente'],
+    ['Vazamentos', 'haveibeenpwned.com', 'https://haveibeenpwned.com', 'Se um e-mail apareceu em vazamentos'],
+    ['HTTPS', 'ssllabs.com/ssltest', 'https://www.ssllabs.com/ssltest/', 'Nota da configuração HTTPS de um site'],
+    ['IPv6', 'test-ipv6.com', 'https://test-ipv6.com', 'Se sua conexão já usa IPv6'],
+  ];
+
+
+  /* ---------- M12: teste de porta ---------- */
+  function m12(text, isEx) {
+    const r = parsePort(text);
+    if (!r.ok) return errorOut('m12', 'Não reconheci a saída. Cole o resultado do Test-NetConnection (PowerShell) ou do nc.');
+    const port = r.port;
+    let html = head(`${r.host || r.ip || 'destino'}${port ? ' · porta ' + port : ''}`, isEx);
+    html += `<div class="row">${r.dnsFail ? tag('bad', 'Nome não encontrado') : r.tcpOk ? tag('good', 'Porta aberta') : r.refused ? tag('warn', 'Conexão recusada') : tag('bad', 'Sem resposta')}${port ? tag('neutral', portName(port)) : ''}${r.pingOk === true ? tag('info', 'ping respondeu' + (r.pingRtt != null ? ` (${r.pingRtt} ms)` : '')) : r.pingOk === false ? tag('neutral', 'ping não respondeu') : ''}</div>`;
+    if (r.ip || r.source) html += `<dl class="kv">${r.ip ? `<dt>Endereço do servidor</dt><dd>${esc(r.ip)} ${ipTag(r.ip)}</dd>` : ''}${r.source ? `<dt>Saiu do seu IP</dt><dd>${esc(r.source)}</dd>` : ''}</dl>`;
+    const ns = [];
+    if (r.dnsFail) ns.push(note('bad', 'O nome não foi traduzido em IP: problema de DNS ou nome digitado errado.'));
+    else if (r.tcpOk) {
+      ns.push(note('good', `O servidor aceitou a conexão TCP na porta ${port}: o serviço está no ar.`));
+      ns.push(note('info', 'Se o ping para esse mesmo servidor deu tempo esgotado, é porque ele (ou um firewall no caminho) descarta pacotes ICMP. O site continua funcionando, porque o navegador usa TCP, não ICMP.'));
+    } else if (r.refused) ns.push(note('warn', 'O servidor respondeu, mas recusou: a máquina está ligada e alcançável, porém nenhum programa escuta nessa porta.'));
+    else ns.push(note('bad', 'Nenhuma resposta: um firewall está descartando os pacotes ou o servidor está fora do ar. Diferente de “recusada”, aqui não dá para saber nem se a máquina existe.'));
+    if (r.pingOk === true && r.tcpOk === false) ns.push(note('info', 'O ping respondeu e a porta não: a máquina está no ar, só não oferece esse serviço (ou o firewall bloqueia essa porta).'));
+    ns.push(note('info', 'Teste apenas servidores públicos conhecidos ou a sua própria rede. Testar várias portas de máquinas de outras pessoas é varredura e exige autorização.'));
+    html += `<div class="notes">${ns.join('')}</div>`;
+    setOut('m12', html, isEx);
+    if (!isEx) markDone('m12');
+  }
+
+  /* ---------- M13: velocidade ---------- */
+  const SPEED_EX = [{ type: 'Cabo', down: 480, up: 240, ping: 8, plan: 500 }, { type: 'Wi-Fi', down: 120, up: 90, ping: 14, plan: 500 }];
+  function dur(sec) { if (!isFinite(sec)) return '—'; if (sec < 60) return Math.max(1, Math.round(sec)) + ' s'; if (sec < 3600) return Math.round(sec / 60) + ' min'; const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60); return h + ' h' + (m ? ' ' + m + ' min' : ''); }
+  function renderSpeed() {
+    const isEx = !state.speeds.length;
+    const rows = isEx ? SPEED_EX : state.speeds;
+    const x = rows[rows.length - 1];
+    let html = head(`Última medição: ${x.type}`, isEx);
+    html += `<div class="tiles">
+      <div class="tile"><span class="k">Download real</span><span class="v">${fmt(x.down / 8)} MB/s</span></div>
+      <div class="tile"><span class="k">Jogo de 50 GB</span><span class="v">${dur(50 * 8000 / x.down)}</span></div>
+      ${x.up ? `<div class="tile"><span class="k">Enviar vídeo de 2 GB</span><span class="v">${dur(2 * 8000 / x.up)}</span></div>` : ''}
+      <div class="tile"><span class="k">Vídeos 4K ao mesmo tempo</span><span class="v">${Math.floor(x.down / 25)}</span></div>
+      ${x.up ? `<div class="tile"><span class="k">Chamadas HD ao mesmo tempo</span><span class="v">${Math.floor(x.up / 4)}</span></div>` : ''}
+      ${x.ping ? `<div class="tile"><span class="k">Ping</span><span class="v ${latTone(x.ping)}">${fmt(x.ping)} ms</span></div>` : ''}
+    </div>`;
+    const ns = [note('info', `Mbps são megabits por segundo. Divida por 8 para ter megabytes: ${fmt(x.down)} Mbps ≈ ${fmt(x.down / 8)} MB/s. As contas acima consideram cerca de 25 Mbps por vídeo 4K e 4 Mbps de upload por chamada em HD.`)];
+    if (x.plan) { const pct = x.down / x.plan * 100; ns.push(note(pct >= 80 ? 'good' : pct >= 40 ? 'warn' : 'bad', `Este teste entregou ${fmt(pct, 0)}% do plano de ${fmt(x.plan, 0)} Mbps.${pct < 80 ? ' Antes de culpar o provedor, repita o teste no cabo e com poucos aparelhos usando a rede.' : ''}`)); }
+    const lastOf = t => [...rows].reverse().find(r => r.type === t);
+    const cabo = lastOf('Cabo'), wifi = lastOf('Wi-Fi');
+    if (cabo && wifi) { const ratio = wifi.down / cabo.down; ns.push(note(ratio < 0.7 ? 'warn' : 'good', ratio < 0.7 ? `No Wi-Fi a velocidade ficou em ${fmt(ratio * 100, 0)}% da do cabo. O gargalo está no Wi-Fi (distância, paredes, interferência ou padrão do roteador), não no provedor.` : `O Wi-Fi entregou ${fmt(ratio * 100, 0)}% da velocidade do cabo: a rede sem fio está boa.`)); }
+    if (x.ping && x.ping > 60) ns.push(note(latTone(x.ping), 'O ping do teste está alto. Ele mede até o servidor do teste, que costuma ficar na sua cidade; acima de 60 ms vale investigar o Wi-Fi ou a rede local.'));
+    html += `<div class="notes">${ns.join('')}</div>`;
+    html += `<div class="tablewrap"><table class="data"><thead><tr><th>Conexão</th><th>Download</th><th>Upload</th><th>Ping</th><th>% do plano</th><th></th></tr></thead><tbody>${rows.map((r, i) => `<tr>
+      <td>${esc(r.type)}</td><td class="mono">${fmt(r.down)} Mbps</td><td class="mono">${r.up ? fmt(r.up) + ' Mbps' : '—'}</td>
+      <td class="mono ${r.ping ? latTone(r.ping) : ''}">${r.ping ? fmt(r.ping) + ' ms' : '—'}</td><td class="mono">${r.plan ? fmt(r.down / r.plan * 100, 0) + '%' : '—'}</td>
+      <td>${isEx ? '' : `<button class="btn ghost small" type="button" data-sdel="${i}">Remover</button>`}</td></tr>`).join('')}</tbody></table></div>`;
+    $('#out-m13').innerHTML = html;
+    $$('[data-sdel]').forEach(b => b.onclick = () => { state.speeds.splice(Number(b.dataset.sdel), 1); store.set('speeds', state.speeds); renderSpeed(); });
+  }
+
+  /* ---------- M14: cronômetro curl ---------- */
+  const CURL_COLORS = { DNS: '#8DBBF5', TCP: '#5CC8BF', TLS: '#EBA0C0', Servidor: '#F0A940', Download: '#C9D3DC' };
+  function m14(text, isEx) {
+    const r = parseCurlTiming(text);
+    if (!r.ok) return errorOut('m14', 'Não reconheci a saída. Ela deve ter uma linha como: dns=0.045 tcp=0.312 tls=0.598 ttfb=0.903 total=1.120 codigo=200.');
+    let html = head(`${r.runs.length} ${r.runs.length > 1 ? 'medições' : 'medição'}`, isEx);
+    r.runs.forEach((x, i) => {
+      const parts = [['DNS', x.dns], ['TCP', x.tcp], ['TLS', x.tls], ['Servidor', x.server], ['Download', x.download]].filter(p => p[1] > 0);
+      html += `<div class="box"><h4>Medição ${i + 1} ${x.code ? tag(x.code < 300 ? 'good' : x.code < 400 ? 'info' : 'bad', 'HTTP ' + x.code) : ''} ${tag(latTone(x.rtt), 'latência ≈ ' + fmt(x.rtt, 0) + ' ms')}</h4>
+        <div class="phases">${parts.map(([k, v]) => `<span style="flex:${Math.max(v, 1)};background:${CURL_COLORS[k]}" title="${k}: ${fmt(v, 0)} ms">${v / x.total > 0.1 ? k : ''}</span>`).join('')}</div>
+        <div class="legend">${parts.map(([k, v]) => `<span><i style="background:${CURL_COLORS[k]}"></i>${k}: ${fmt(v, 0)} ms</span>`).join('')}<span><b>Primeiro byte: ${fmt(x.ttfb, 0)} ms</b></span><span><b>Total: ${fmt(x.total, 0)} ms</b></span></div></div>`;
+    });
+    const a = r.runs[0], b = r.runs[1];
+    const ns = [note(latTone(a.rtt), `A etapa TCP é o aperto de mão: dura uma ida e volta. Por isso ela mede a latência até o servidor, cerca de <b>${fmt(a.rtt, 0)} ms</b>, mesmo quando o ping está bloqueado.`)];
+    if (a.tls) ns.push(note('info', `O TLS levou ${fmt(a.tls, 0)} ms, perto de mais uma ida e volta: é a troca de chaves que deixa a conexão criptografada.`));
+    else ns.push(note('warn', 'Sem etapa TLS: o endereço foi acessado por HTTP, sem criptografia.'));
+    if (b && b.dns < a.dns * 0.5) ns.push(note('good', `Na segunda medição o DNS caiu de ${fmt(a.dns, 0)} ms para ${fmt(b.dns)} ms: a resposta veio do cache.`));
+    if (a.code >= 300 && a.code < 400) ns.push(note('info', 'Código 3xx: o servidor mandou para outro endereço e o curl não segue sozinho. Use o endereço final ou acrescente a opção -L.'));
+    ns.push(note('info', `Volte ao simulador (“A jornada de uma requisição”), coloque a latência em cerca de ${Math.round(a.rtt / 5) * 5} ms e compare o tempo até o primeiro byte com os ${fmt(a.ttfb, 0)} ms medidos.`));
+    html += `<div class="notes">${ns.join('')}</div>`;
+    setOut('m14', html, isEx);
+    if (!isEx) markDone('m14');
+  }
+
+  /* ---------- análise / exemplos ---------- */
+  const ANALYZERS = { m1, m3, m5, m6, m9b, m10, m12, m14 };
+  const EXKIND = { m1: 'ipconfig', m3: 'ping', m5: 'trace', m6: 'dns', m9b: 'arp', m10: 'netstat', m12: 'port', m14: 'curl' };
+  function runExample(id) { const kind = EXKIND[id]; const txt = exOs(kind); ANALYZERS[id](txt, true); }
+
+  /* ---------- inicialização ---------- */
+  function init() {
+    $$('.seg button').forEach(b => b.onclick = () => setOs(b.dataset.os));
+    $$('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.os === state.os));
+    $$('[data-analyze]').forEach(b => b.onclick = () => {
+      const id = b.dataset.analyze;
+      if (id === 'm2') {
+        const v = $('#in-m2').value.trim();
+        if (!v) { errorOut('m2', 'Digite o IP que o site mostrou.'); return; }
+        state.publicIp = v; store.set('publicIp', v); renderM2();
+        if (isIPv4(v) && ['public', 'doc'].includes(classifyIp(v).key)) markDone('m2');
+        drawSim(); renderSim(false); return;
+      }
+      if (id === 'm9') { m9($('#in-m9').value); return; }
+      const ta = document.getElementById('in-' + id);
+      if (!ta.value.trim()) { (id === 'm9b' ? (h => { $('#out-m9b').innerHTML = h; }) : (h => errorOut(id, h)))(note('bad', 'Cole primeiro a saída do comando na caixa acima.')); return; }
+      ANALYZERS[id](ta.value, false);
+    });
+    $$('[data-example]').forEach(b => b.onclick = () => { const id = b.dataset.example; const ta = document.getElementById('in-' + id); ta.value = exOs(EXKIND[id]); runExample(id); });
+
+    chips('#trace-targets', [['8.8.8.8', '8.8.8.8 · Google'], ['registro.br', 'registro.br · Brasil'], ['hnd-jp-ping.vultr.com', 'hnd-jp-ping.vultr.com · Tóquio']], state.traceTarget, v => state.traceTarget = v);
+    chips('#dns-targets', [['google.com', 'google.com'], ['registro.br', 'registro.br'], ['-type=mx gmail.com', 'e-mail do gmail.com (MX)'], ['hnd-jp-ping.vultr.com', 'hnd-jp-ping.vultr.com']], state.dnsTarget, v => state.dnsTarget = v);
+    renderPingTargets();
+    chips('#port-targets', [['www.u-tokyo.ac.jp', 'www.u-tokyo.ac.jp · bloqueia ping'], ['google.com', 'google.com'], ['registro.br', 'registro.br'], ['hnd-jp-ping.vultr.com', 'hnd-jp-ping.vultr.com']], state.portTarget, v => state.portTarget = v);
+    $('#port-num').onchange = () => { state.port = $('#port-num').value; renderCmds(); };
+    chips('#curl-targets', [['https://www.u-tokyo.ac.jp', 'u-tokyo.ac.jp · Japão'], ['https://www.google.com', 'google.com'], ['https://registro.br', 'registro.br · Brasil'], ['http://example.com', 'example.com · sem HTTPS']], state.curlTarget, v => state.curlTarget = v);
+    $('#speed-form').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const num = id => { const v = parseFloat($(id).value); return isNaN(v) || v <= 0 ? null : v; };
+      const down = num('#sp-down');
+      if (!down) { $('#out-m13').insertAdjacentHTML('afterbegin', note('bad', 'Digite pelo menos o download, em Mbps.')); return; }
+      state.speeds.push({ type: $('#sp-type').value, down, up: num('#sp-up'), ping: num('#sp-ping'), plan: num('#sp-plan') });
+      state.speeds = state.speeds.slice(-10); store.set('speeds', state.speeds);
+      ['#sp-down', '#sp-up', '#sp-ping'].forEach(id => $(id).value = '');
+      renderSpeed(); markDone('m13');
+    });
+
+    $('#phys-dest').innerHTML = DESTS.map(([n, km], i) => `<option value="${i}"${n === 'Miami' ? ' selected' : ''}>${n} (${km.toLocaleString('pt-BR')} km)</option>`).join('');
+    $('#phys-dest').onchange = () => m4(true); $('#phys-meas').oninput = () => m4(true);
+
+    const sel = $('#calc-prefix');
+    for (let p = 8; p <= 30; p++) sel.insertAdjacentHTML('beforeend', `<option value="${p}"${p === 24 ? ' selected' : ''}>/${p} · ${intToIp(maskFromPrefix(p))}</option>`);
+    ['#calc-ip', '#calc-ip2'].forEach(s => $(s).oninput = () => m8(true)); sel.onchange = () => m8(true);
+    $('#calc-mine').onclick = () => { if (state.local) { $('#calc-ip').value = state.local.ip; sel.value = String(Math.max(8, Math.min(30, state.local.prefix || 24))); m8(true); } else { $('#out-m8b').innerHTML = note('warn', 'Faça a missão 1 primeiro: o seu IP ainda não foi analisado.'); } };
+
+    $('#pair-ip').oninput = () => { renderPairInfo(); renderCmds(); };
+    $('#sim-rtt').oninput = () => { $('#sim-rtt-v').textContent = $('#sim-rtt').value + ' ms'; renderSim(false); };
+    $('#sim-cache').onchange = () => { sim.i = 0; stopPlay(); renderSim(false); };
+    $('#sim-https').onchange = () => { sim.i = 0; stopPlay(); renderSim(false); };
+    $('#sim-next').onclick = () => { stopPlay(); sim.i++; renderSim(true); };
+    $('#sim-prev').onclick = () => { stopPlay(); sim.i--; renderSim(true); };
+    $('#sim-reset').onclick = () => { stopPlay(); sim.i = 0; renderSim(false); };
+    $('#sim-play').onclick = play;
+
+    $('#sites-list').innerHTML = SITES.map(([k, n, u, d]) => `<a class="site" href="${u}" target="_blank" rel="noopener"><em>${esc(k)}</em><b>${esc(n)} ↗</b><span>${esc(d)}</span></a>`).join('');
+
+    renderCmds(); renderToc();
+    // estado inicial: exemplos analisados, ou os dados do aluno se já existirem
+    ['m1', 'm3', 'm12', 'm5', 'm6', 'm14', 'm10'].forEach(runExample);
+    renderSpeed();
+    runExample('m9b');
+    if (state.publicIp) $('#in-m2').value = state.publicIp;
+    renderM2(); renderHistory(); m4(false); m8(false); renderPairInfo(); renderQuiz();
+    sim.i = 0; renderSim(false);
+  }
+  init();
+})();
+
+</script>
+</body>
+</html>
